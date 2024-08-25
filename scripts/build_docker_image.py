@@ -10,10 +10,15 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   "url_analyzer": """
   FROM python:3.11.7
   COPY . /app
+  RUN ls
   WORKDIR /app
+  RUN ls
+  RUN ls url_analyzer
+
   RUN mkdir /workdir
+  RUN pip install "fastapi[standard]"
+  RUN pip install -r requirements.txt
   EXPOSE 8000
-  RUN if [ -f requirements.txt ]; then pip install -r requirements.txt; else echo "No requirements.txt, skipping pip install."; fi
   """
 }
 
@@ -22,7 +27,7 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
 def build_image(
   docker_client: DockerClient,
   tag: str,
-  path_to_code_dir: str,
+  path_to_code_dir_parent: str,
   code_dir_name: str,
   repository: str,
   platform: Optional[str] = None
@@ -32,10 +37,10 @@ def build_image(
   os.mkdir(working_dir)
 
   # Add the code that we will be working with
-  if os.path.isdir(path_to_code_dir):
-    shutil.copytree(path_to_code_dir, os.path.join(working_dir, code_dir_name))
+  if os.path.isdir(path_to_code_dir_parent):
+    shutil.copytree(path_to_code_dir_parent, os.path.join(working_dir, code_dir_name))
   else:
-    print(f"WARNING: Path to code dir {path_to_code_dir} does not exist. Not copying code.")
+    print(f"WARNING: Path to code dir {path_to_code_dir_parent} does not exist. Not copying code.")
 
   dockerfile_content = CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT[code_dir_name]
   # create Dockerfile
@@ -76,7 +81,7 @@ if __name__ == "__main__":
       --tag url_analyzer \
       --code_dir_name url_analyzer \
       --repository <your docker repository> \
-      --path_to_code_dir <path to this directory>
+      --path_to_code_dir_parent <path to this directory>
   Run
     docker run <your docker repository>:url_analyzer fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
 
@@ -84,7 +89,7 @@ if __name__ == "__main__":
 
   parser = argparse.ArgumentParser(description='Build a docker image')
   parser.add_argument('--tag', type=str, required=True)
-  parser.add_argument('--path_to_code_dir', type=str, required=True)
+  parser.add_argument('--path_to_code_dir_parent', type=str, required=True)
   parser.add_argument('--code_dir_name', type=str, required=True)
   parser.add_argument('--repository', type=str, required=True)
   parser.add_argument('--platform', type=str, default=None)
@@ -96,7 +101,7 @@ if __name__ == "__main__":
   full_tag = build_image(
     docker_client=docker_client,
     tag=args.tag,
-    path_to_code_dir=args.path_to_code_dir,
+    path_to_code_dir_parent=args.path_to_code_dir_parent,
     code_dir_name=args.code_dir_name,
     repository=args.repository,
     platform=args.platform
