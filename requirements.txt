@@ -46,4 +46,4 @@ torch
 transformers
 pygtrie
 fastapi[standard]
-jwt
+pyjwt

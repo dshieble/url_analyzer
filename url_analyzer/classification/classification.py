@@ -11,7 +11,7 @@ from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPa
 
 async def spider_and_classify_url(
   url: str,
-  headless: bool = False,
+  headless: bool = True,
   included_fqdn_regex: Optional[str] = None,
   max_html_token_count: int = 2000,
 ) -> UrlClassificationWithLLMResponse:
