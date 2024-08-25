@@ -63,6 +63,6 @@ async def classify_url(url_request: UrlClassificationRequest):
 
 if __name__ == "__main__":
   """
-  uvicorn url_analyzer/api/start_api.py:app --host 0.0.0.0 --port 8000
+  uvicorn /Users/danshiebler/workspace/personal/phishing/url_analyzer/api/start_api.py:app --host 0.0.0.0 --port 8000
   """
   uvicorn.run(app, host="0.0.0.0", port=8000)
