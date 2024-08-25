@@ -58,26 +58,27 @@ def build_image(
     raise e
 
   docker_client.images.push(repository, tag)
-  # push to Docker hub
-  # docker_client.images.push(image_name, tag=tag)
   return full_tag
 
 
 if __name__ == "__main__":
   """
-  Steps:
-    1. Download the code to `path_to_code_dir` using git
-    2. Add a requirements.txt file if needed to the target directory
-    3. Run one of the below commands
 
+  Setup Docker (instructions below are just an example for an ARM Mac)
+    docker login
+    colima start -m 8
+
+    # This symlink is required to enable the python DockerClient to work with colima (https://github.com/abiosoft/colima/issues/468)
+    sudo ln -sf $HOME/.colima/default/docker.sock /var/run/docker.sock
 
   Build
     python scripts/build_docker_image.py \
       --tag url_analyzer \
       --code_dir_name url_analyzer \
-      --path_to_code_dir /Users/danshiebler/workspace/personal/phishing/url_analyzer
+      --repository <your docker repository> \
+      --path_to_code_dir <path to this directory>
   Run
-    docker run danshiebler/private:url_analyzer fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
+    docker run <your docker repository>:url_analyzer fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
 
   """
 
@@ -85,7 +86,7 @@ if __name__ == "__main__":
   parser.add_argument('--tag', type=str, required=True)
   parser.add_argument('--path_to_code_dir', type=str, required=True)
   parser.add_argument('--code_dir_name', type=str, required=True)
-  parser.add_argument('--repository', type=str, default="danshiebler/private")
+  parser.add_argument('--repository', type=str, required=True)
   parser.add_argument('--platform', type=str, default=None)
   args = parser.parse_args()
 

@@ -25,10 +25,9 @@ from url_analyzer.browser_automation.run_calling_context import fill_form_on_pag
 
 from url_analyzer.utilities.single_visit_queue import PrefixOptimizedSingleVisitQueue
 from url_analyzer.utilities.utilities import Maybe, filter_url, get_base_url_from_url, load_pydantic_model_from_directory_path, pydantic_create, pydantic_validate, run_with_logs, url_to_filepath
-from url_analyzer.utilities.constants import URL_ASSET_REGEX
 from url_analyzer.utilities.logger import BASE_LOG_DIRECTORY, Logger
 
-
+URL_ASSET_REGEX = r'^http(.*)\.(js|css|png|jpg|jpeg|woff2|svg|pdf)(\?.*|)$'
 MAX_BODY_TEXT_LENGTH = 10000
 DEFAULT_PLAYWRIGHT_SPIDER_DIRECTORY_ROOT_PATH = os.path.join( os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), "outputs/playwright_scanner_outputs")
 SPIDER_DIRECTORY_NAME = "spider"

@@ -35,7 +35,7 @@ if __name__ == "__main__":
   """
   python scripts/hit_api.py \
     --url http://danshiebler.com/ \
-    --api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjQ2OTQzOTEsImlhdCI6MTcyNDYwNzk5MX0.8J2CzS3YSCA7l9UGuobo0c1Zuuhhh2gCIFQgNo6YUHo
+    --api_key=<your api key>
   """
   parser = argparse.ArgumentParser()
   parser.add_argument("--url", type=str, required=True)

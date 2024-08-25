@@ -48,15 +48,7 @@ if __name__ == "__main__":
   export BASE_URL=http://danshiebler.com/; \
   python3 scripts/log_browsing.py \
     --base_url=$BASE_URL \
-    --base_log_dir=/Users/danshiebler/workspace/personal/phishing/url_analyzer/outputs/browsing_logs
-  
-    
-  export BASE_URL=http://5hpf7vz.nickleonardson.com/; \
-  python3 scripts/log_browsing.py \
-    --base_url=$BASE_URL \
-    --base_log_dir=/Users/danshiebler/workspace/personal/phishing/url_analyzer/outputs/browsing_logs
-  
-  
+    --base_log_dir=<path to where you want browsing logs to be recorded>
 
   """
   # Use one asynchronous process to crawl the urls

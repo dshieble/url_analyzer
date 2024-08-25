@@ -29,7 +29,7 @@ if __name__ == "__main__":
   """
   
   python scripts/classify_visited_url.py \
-    --visited_url_json_path=/Users/danshiebler/workspace/personal/phishing/url_analyzer/scripts/../url_analyzer/browser_automation/../../outputs/playwright_scanner_outputs/1724555940___http___danshiebler.com_d0a977a4-141f-4e85-b2fd-b10e2345495d/spider
+    --visited_url_json_path=<path to the visited url json file>
   
   """
 
