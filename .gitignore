@@ -1,0 +1,15 @@
+__pycache__
+__pycache__/*
+env/
+old/
+*.egg-info
+cruft
+.env
+terraform.tfvars
+.terraform*
+terraform.tfstate*
+.vscode
+outputs/*
+todo
+logs
+logs/*
