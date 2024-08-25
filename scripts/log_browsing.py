@@ -4,14 +4,7 @@ import os
 import time
 import sys
 import os
-from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
-import uuid
-from playwright.async_api import async_playwright
 import asyncio
-from urllib.parse import urljoin
-import re
-
-
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -21,11 +14,8 @@ from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPa
 from url_analyzer.utilities.utilities import run_with_logs
 
 
-
-
 async def main(args):
   log_file = os.path.join(args.base_log_dir, str(int(time.time())))
-
 
   playwright_page_manager = await PlaywrightPageManager.construct(headless=False)
 
@@ -54,12 +44,6 @@ async def main(args):
 if __name__ == "__main__":
   """
   The goal of this script is to open a PlaywrightPageManager with network tracking and stay open until the user closes it
-  
-
-  
-
-  
-
     
   export BASE_URL=http://danshiebler.com/; \
   python3 scripts/log_browsing.py \

@@ -1,25 +1,9 @@
-import asyncio
-from copy import deepcopy
-import os
-import sys
-
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
-import urllib.parse
-import json
-import time
-import re
-from typing import List, Optional, Union
+from typing import List, Optional
 from diff_match_patch import diff_match_patch
-from pydantic import BaseModel
 import tiktoken
-
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-from browser_automation.datamodel import ActionRequest
-from utilities.utilities import Maybe
 
 
 # Function to compare HTML files and return the differences as a string

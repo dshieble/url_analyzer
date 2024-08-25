@@ -1,3 +1,5 @@
+- create a web server that exposes an API
+- switch the data storage to SQL
 - enable the scanner to avoid detection
 - switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)

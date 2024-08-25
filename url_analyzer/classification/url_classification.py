@@ -13,7 +13,7 @@ from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIF
 from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
-from url_analyzer.llm.formatting_utils import find_json_string, load_function_call
+from url_analyzer.llm.formatting_utils import load_function_call
 from url_analyzer.utilities.utilities import Maybe
 
 class UrlClassification(BaseModel):
@@ -107,3 +107,4 @@ async def classify_visited_url(
     max_html_token_count=max_html_token_count,
   )
   return UrlClassificationWithLLMResponse.from_llm_response(llm_response=llm_response)
+

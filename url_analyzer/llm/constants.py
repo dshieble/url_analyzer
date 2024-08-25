@@ -5,9 +5,7 @@ from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from utilities.utilities import Maybe
 
 OPEN_URL_ACTION_NAME = "open_url"
 

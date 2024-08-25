@@ -3,43 +3,28 @@ https://www.zenrows.com/blog/avoid-playwright-bot-detection#user-agent
 https://github.com/AtuboDad/playwright_stealth
 """
 import asyncio
-from copy import deepcopy
-from dataclasses import dataclass
 import json
 import re
-import sys
 import os
 
-import io
 import time
-import traceback
-from typing import Any, Callable, Dict, Generic, Iterable, List, Optional, OrderedDict, Set, Tuple, TypeVar, Union
+from typing import Dict, List, Optional, Set, Tuple
 import uuid
-import PIL
 import PIL.Image
 from bs4 import BeautifulSoup, Comment
-import chardet
-import playwright
 from playwright.async_api import async_playwright
 from playwright._impl._page import Page
 from playwright_stealth import stealth_async
-import requests
 from unidecode import unidecode
-import validators
 import inscriptis
-import pytesseract
 import json
 import time
 import os
 from playwright.async_api._generated import Request
-import dill
 import curlify
-from pydantic import BaseModel, ValidationError
-import urllib.parse
 from playwright.async_api._generated import ElementHandle, Locator
 from urllib.parse import urljoin
 
-from url_analyzer.utilities.utilities import run_with_logs, url_to_filepath
 from url_analyzer.utilities.s3_utils import AsyncS3Client
 from url_analyzer.browser_automation.datamodel import NetworkLog, PageLoadResponse, UrlScreenshotResponse, scroll_page_and_wait, wait_for_load_state_safe
 from url_analyzer.browser_automation.response_record import get_response_log
@@ -299,19 +284,6 @@ def truncate_string_from_last_occurrence(string: str, character: str) -> str:
     return string
 
 
-# async def get_interactable_locators_with_reloads(page_or_frame: "Page", num_reloads: int = 15, delay_seconds: int = 2, **kwargs) -> List[Locator]:
-#   for _ in range(num_reloads):
-#     interactable_locators = await get_interactable_locators_from_locators(page_or_frame=page_or_frame, **kwargs)
-#     if len(interactable_locators) > 0:
-#       break
-#     else:
-#       print("Sleeping and reloading page...")
-#       await page_or_frame.playwright_page_manager.reload_and_click()
-#       await asyncio.sleep(delay_seconds)
-#   return interactable_locators
-
-
-
 async def _has_inner_html(locator: Locator) -> bool:
   try:
     inner_html = await locator.inner_html()
@@ -432,38 +404,6 @@ async def get_and_fill_text_input_field_list(page_or_frame: "Page") -> List[Loca
   text_input_field_locators = await get_text_input_field_list(page_or_frame=page_or_frame)
   error_list = await asyncio.gather(*[safe_fill(locator=locator, value=str(uuid.uuid4()),  timeout=5000) for locator in text_input_field_locators])
   return [locator for locator, error in zip(text_input_field_locators, error_list) if error is None]
-  
-"""
-
-Attempt to identify elements where we can fill them with text
-
-async def is_text_input(element):
-    # Check if the element is editable
-    is_editable = await element.is_editable()
-    
-    if is_editable:
-        try:
-            # Attempt to fill the element
-            await element.fill('test')
-            return True
-        except Exception:
-            return False
-
-    # Check if the element has a contenteditable attribute
-    contenteditable = await element.get_attribute('contenteditable')
-
-    if contenteditable:
-        try:
-            # Attempt to fill the element
-            await element.fill('test')
-            return True
-        except Exception:
-            return False
-
-    return False
-"""
-
-
 
 def get_cookie_list_from_headers(fqdn: str, all_headers: Dict[str, str]) -> List[Dict[str, str]]:
   """
@@ -549,14 +489,6 @@ async def get_image_links_from_page(page: "Page") -> List[str]:
   return image_links
 
 
-
-# async def select_elements_with_aria_label_that_matches_string(page: Page, search_string: str) -> List[Locator]:
-#   # Use the page.locator() method with the XPath expression to find matching elements
-#   search_string_lower = search_string.lower()
-#   elements = page.locator(f'[aria-label*="{search_string_lower}" i]')
-
-#   return (await elements.all())
-
 class NetworkTracker:
   # Track the network calls that a page makes
 
@@ -572,19 +504,3 @@ class NetworkTracker:
     with open(path, "w"):
       json.dump(self.get_network_log(), path)
 
-
-class LoginConfig(BaseModel):
-  login_url: Optional[str]
-  user_supplied_login_arg_keys: Optional[List[str]]
-  user_supplied_login_arg_values: Optional[List[str]]
-
-  @classmethod
-  def from_args(cls, args)-> "Optional[LoginConfig]":
-    if args.login_url is None:
-      return None
-    else:
-      return LoginConfig(
-        login_url=args.login_url,
-        user_supplied_login_arg_keys=(None if args.user_supplied_login_arg_keys is None else args.user_supplied_login_arg_keys.split(",")),
-        user_supplied_login_arg_values=(None if args.user_supplied_login_arg_values is None else args.user_supplied_login_arg_values.split(",")),
-      )

@@ -1,24 +1,12 @@
 """
 Logic for locating and interacting with elements on a page using Playwright between multiple browser instances
 """
-"""
 
-TODO: Switch to pushing buttons first rather than all interactable elements
-TODO: Parallelize this among multiple tabs
-
-"""
 import re
-import sys
-import os
-import asyncio
-from collections import defaultdict
 from dataclasses import dataclass
 import traceback
-from typing import Dict, List, Optional, Set, Tuple
-import uuid
-from playwright.async_api._generated import ElementHandle, Locator
-from tqdm import tqdm
-from collections import defaultdict
+from typing import List, Optional, Set, Tuple
+from playwright.async_api._generated import Locator
 
 
 
