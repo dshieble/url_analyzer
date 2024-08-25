@@ -29,7 +29,8 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
     url_classification_with_llm_response = await spider_and_classify_url(
       url=url
     )
-    return url_classification_with_llm_response.model_dump_json()
+    # return url_classification_with_llm_response.model_dump_json()
+    return url_classification_with_llm_response
   except jwt.ExpiredSignatureError:
     raise HTTPException(status_code=403, detail="Token has expired")
   except jwt.JWTClaimsError:

@@ -10,30 +10,17 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
 
 
-# Function to create JWT token
-def create_jwt_token(jwt_secret_key_path: str):
-  # Load the JWT secret key
-  with open(jwt_secret_key_path, "r") as f:
-    jwt_secret_key = f.read().strip()
 
-  payload = {
-    "exp": int((datetime.now() + timedelta(hours=1)).timestamp()),  # Expire in 1 hour
-    "iat": int(datetime.now().timestamp())
-  }
-  return jwt.encode(payload, jwt_secret_key, algorithm="HS256")
-
-def classify_url_with_requests(url: str, jwt_secret_key_path: str):
+def classify_url_with_requests(url: str, api_key: str):
 
   # Prepare the JSON payload
   payload = {
     "url": url
   }
 
-  token = create_jwt_token(jwt_secret_key_path)
-
   # Set the Authorization header
   headers = {
-    "Authorization": f"Bearer {token}"
+    "Authorization": f"Bearer {api_key}"
   }
 
   # Send the POST request
@@ -49,13 +36,13 @@ if __name__ == "__main__":
   """
   python scripts/hit_api.py \
     --url http://danshiebler.com/ \
-    --jwt_secret_key_path=/tmp/jwt_secret_key.txt
+    --api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjQ2OTQzOTEsImlhdCI6MTcyNDYwNzk5MX0.8J2CzS3YSCA7l9UGuobo0c1Zuuhhh2gCIFQgNo6YUHo
   """
   parser = argparse.ArgumentParser()
   parser.add_argument("--url", type=str, required=True)
-  parser.add_argument("--jwt_secret_key_path", type=str, required=True)
+  parser.add_argument("--api_key", type=str, required=True)
 
   args = parser.parse_args()
 
-  result = classify_url_with_requests(url=args.url, jwt_secret_key_path=args.jwt_secret_key_path)
+  result = classify_url_with_requests(url=args.url, api_key=args.api_key)
   print(result)
