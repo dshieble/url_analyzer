@@ -1,0 +1,5 @@
+- enable the scanner to avoid detection
+- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
+- switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
+- record a summary of the image of the home page
+- add IP and domain intelligence
