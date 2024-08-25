@@ -17,7 +17,7 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
 
   RUN mkdir /workdir
   RUN pip install "fastapi[standard]"
-  RUN pip install -r requirements.txt
+  RUN pip install -r url_analyzer/requirements.txt
   EXPOSE 8000
   """
 }
