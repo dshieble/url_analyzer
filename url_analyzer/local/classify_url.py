@@ -6,7 +6,8 @@ import os
 from playwright.async_api import async_playwright
 import asyncio
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'))
+
 
 from url_analyzer.classification.url_classification import classify_visited_url
 from url_analyzer.browser_automation.playwright_spider import load_visited_url_list_from_path
@@ -28,7 +29,7 @@ async def main(args):
 if __name__ == "__main__":
   """
   
-  python scripts/classify_url.py \
+  python url_analyzer/local/classify_url.py \
     --url http://danshiebler.com/
   
   """

@@ -1,7 +1,17 @@
-- create a web server that exposes an API
+- deploy web server in AWS lightsail container with secret key (no database yet)
+
 - switch the data storage to SQL
+
+
 - enable the scanner to avoid detection
 - switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
 - record a summary of the image of the home page
 - add IP and domain intelligence
+- move JWT secret key storage to secrets manager
+
+
+- build an authentication engine
+  - JWT is saved to a file
+  - API keys are created from JWT when new users are created
+  - Per-API key quota is tracked in a database

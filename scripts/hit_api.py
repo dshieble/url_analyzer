@@ -10,7 +10,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
 
 
-
 def classify_url_with_requests(url: str, api_key: str):
 
   # Prepare the JSON payload

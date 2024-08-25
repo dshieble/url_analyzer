@@ -39,4 +39,7 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
     raise HTTPException(status_code=403, detail="Invalid token")
 
 if __name__ == "__main__":
+  """
+  fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
+  """
   pass
