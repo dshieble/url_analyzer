@@ -16,7 +16,7 @@ def classify_url_with_requests(url: str, token: str):
 
   # Set the Authorization header
   headers = {
-    "Authorization": f"Bearer {token}"
+    # "Authorization": f"Bearer {token}"
   }
 
   # Send the POST request
