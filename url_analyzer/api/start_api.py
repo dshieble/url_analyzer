@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
@@ -5,16 +6,13 @@ import jwt
 from datetime import datetime, timedelta
 from typing import Optional
 
-from url_analyzer.api.utilities import generate_jwt_secret_key
 from url_analyzer.classification.classification import spider_and_classify_url
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
 
 
 app = FastAPI()
 
-JWT_SECRET_KEY_PATH = "/tmp/jwt_secret_key.txt"
-with open(JWT_SECRET_KEY_PATH, "r") as f:
-  JWT_SECRET_KEY = f.read().strip()
+JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 
 # JWT bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

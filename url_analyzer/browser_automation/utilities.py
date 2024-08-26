@@ -41,9 +41,6 @@ DEFAULT_IMAGE_ROOT_PATH = os.path.join(os.path.dirname(__file__), '..', 'outputs
 async def get_outer_html_list_from_locator_list(locator_list: List[Locator]) -> List[str]:
   return await asyncio.gather(*[locator.evaluate(GET_OUTER_HTML_JAVASCRIPT_FN) for locator in locator_list])
 
-def request_to_formatted_curl(request):
-  return curlify.to_curl(request).replace("-H ", "\-H ").replace("-H ", "\n-H ").replace("-d ", "\-d ").replace("-d ", "\n-d ")
-
 async def load_page(
   page: Page,
   url: str,

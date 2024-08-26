@@ -45,7 +45,7 @@ if __name__ == "__main__":
   """
   The goal of this script is to open a PlaywrightPageManager with network tracking and stay open until the user closes it
     
-  export BASE_URL=http://danshiebler.com/; \
+  export BASE_URL=https://deviceandbrowserinfo.com/info_device; \
   python3 scripts/log_browsing.py \
     --base_url=$BASE_URL \
     --base_log_dir=<path to where you want browsing logs to be recorded>

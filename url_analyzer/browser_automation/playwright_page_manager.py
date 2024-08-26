@@ -4,8 +4,8 @@ https://github.com/AtuboDad/playwright_stealth
 https://substack.thewebscraping.club/p/playwright-stealth-cdp
 
 
-
-
+TODO - deal with Runtime.enable
+https://github.com/kaliiiiiiiiii/undetected-playwright-python
 
 TODO - deal with CDP signals
 https://datadome.co/threat-research/how-new-headless-chrome-the-cdp-signal-are-impacting-bot-detection/
@@ -61,15 +61,21 @@ async def initialize_browser_context(
   storage_state: Optional[str] = None
 ) -> tuple:
   
+  args = []
+    
+  # disable navigator.webdriver:true flag. This is lifted from https://github.com/kaliiiiiiiiii/undetected-playwright-python as a simple solution to avoid detection
+  # also discussed in https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec/69533548#69533548
+  args.append("--disable-blink-features=AutomationControlled")
+  
   if proxy_url is not None:
     # We need to ignore https errors when we run playwright through a proxy
-    browser = await playwright.chromium.launch(headless=headless, proxy={"server": proxy_url})
+    browser = await playwright.chromium.launch(headless=headless, proxy={"server": proxy_url}, args=args)
     context = await browser.new_context(ignore_https_errors=True, storage_state=storage_state)
   else:
-    browser = await playwright.chromium.launch(headless=headless)
+    browser = await playwright.chromium.launch(headless=headless, args=args)
     context = await browser.new_context(storage_state=storage_state)
 
-  await context.route("**/*", remove_if_modified_since_header)
+  # await context.route("**/*", remove_if_modified_since_header)
   return browser, context
 
 @dataclass
@@ -95,6 +101,22 @@ class PlaywrightPageManager:
     page.on("dialog", accept)
     await stealth_async(page)
 
+  #   await page.add_init_script("""
+  #     Object.defineProperty(Navigator.prototype, 'webdriver', {
+  #         set: undefined,
+  #         enumerable: true,
+  #         configurable: true,
+  #         get: new Proxy(
+  #             Object.getOwnPropertyDescriptor(Navigator.prototype, 'webdriver').get,
+  #             { apply: (target, thisArg, args) => {
+  #                 // emulate getter call validation
+  #                 Reflect.apply(target, thisArg, args);
+  #                 return false;
+  #             }}
+  #         )
+  #     });
+  # """
+  # )      
 
   @classmethod
   async def construct(cls, headless: bool = True, proxy_url: Optional[str] = None) -> "PlaywrightPageManager":

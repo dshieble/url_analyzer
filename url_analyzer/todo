@@ -1,3 +1,4 @@
+- convert api to docker
 - deploy web server in AWS lightsail container with secret key (no database yet)
 
 - switch the data storage to SQL

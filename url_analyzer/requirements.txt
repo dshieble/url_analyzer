@@ -1,5 +1,3 @@
-ipython
-jupyter
 pandas
 numpy
 google-auth
@@ -7,8 +5,6 @@ python-dotenv
 gitpython
 json5
 tqdm
-sympy
-matplotlib
 docker
 openai
 numpy
@@ -28,7 +24,6 @@ pytesseract
 dataclasses-json
 aiofiles
 dill
-h8mail
 curlify
 w3lib
 pydantic
@@ -41,9 +36,7 @@ httpx
 diff-match-patch
 langchain_community
 langchain_text_splitters
-llama_index
-torch
-transformers
 pygtrie
 fastapi[standard]
 pyjwt
+uvicorn

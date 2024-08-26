@@ -26,5 +26,4 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   jwt_secret_key = generate_jwt_secret_key()
-  with open(args.path, "w") as f:
-    f.write(jwt_secret_key)
+  print(jwt_secret_key)

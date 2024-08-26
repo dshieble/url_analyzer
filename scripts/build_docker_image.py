@@ -6,9 +6,12 @@ from docker import DockerClient
 import os
 import shutil
 
+
+# TODO: Set environment variables
+
 CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   "url_analyzer": """
-  FROM python:3.11.7
+  FROM python:slim
   COPY . /app
   RUN ls
   WORKDIR /app
@@ -19,6 +22,7 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   RUN pip install "fastapi[standard]"
   RUN pip install -r url_analyzer/url_analyzer/requirements.txt
   EXPOSE 8000
+  CMD fastapi run url_analyzer/url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000
   """
 }
 
@@ -83,7 +87,7 @@ if __name__ == "__main__":
       --repository <your docker repository> \
       --path_to_code_dir_parent <path to this directory>
   Run
-    docker run <your docker repository>:url_analyzer fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
+    docker run <your docker repository>:url_analyzer fastapi run url_analyzer/url_analyzer/api/start_api.py  --host localhost --port 8000
 
   """
 
