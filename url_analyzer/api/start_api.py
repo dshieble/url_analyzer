@@ -31,11 +31,9 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
     return url_classification_with_llm_response
   except jwt.ExpiredSignatureError:
     raise HTTPException(status_code=403, detail="Token has expired")
-  except jwt.JWTError:
-    raise HTTPException(status_code=403, detail="Invalid token")
 
 if __name__ == "__main__":
   """
-  fastapi run url_analyzer/api/start_api.py  --host localhost --port 8000
+  fastapi run url_analyzer/api/start_api.py  --host 0.0.0.0 --port 8000
   """
   pass

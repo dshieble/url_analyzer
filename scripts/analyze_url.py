@@ -33,8 +33,7 @@ if __name__ == "__main__":
   """
   
   python scripts/analyze_url.py \
-    --target_url=http://danshiebler.com/ \
-    --not_headless
+    --target_url=http://my.tomorrowland.com/
   
   python scripts/analyze_url.py \
     --target_url=http://5hpf7vz.nickleonardson.com/ \

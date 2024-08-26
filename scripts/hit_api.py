@@ -23,7 +23,7 @@ def classify_url_with_requests(url: str, api_key: str):
   }
 
   # Send the POST request
-  response = requests.post("http://localhost:8000/classify", params=payload, headers=headers)
+  response = requests.post("http://0.0.0.0:8000/classify", params=payload, headers=headers)
 
   response.raise_for_status()
   data = response.json()
