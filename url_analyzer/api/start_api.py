@@ -31,8 +31,6 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
     return url_classification_with_llm_response
   except jwt.ExpiredSignatureError:
     raise HTTPException(status_code=403, detail="Token has expired")
-  except jwt.JWTClaimsError:
-    raise HTTPException(status_code=403, detail="Invalid token claims")
   except jwt.JWTError:
     raise HTTPException(status_code=403, detail="Invalid token")
 

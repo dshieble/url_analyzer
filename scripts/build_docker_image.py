@@ -19,8 +19,11 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   RUN ls url_analyzer
 
   RUN mkdir /workdir
+
   RUN pip install "fastapi[standard]"
   RUN pip install -r url_analyzer/url_analyzer/requirements.txt
+  RUN playwright install   
+
   EXPOSE 8000
   CMD fastapi run url_analyzer/url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000
   """
