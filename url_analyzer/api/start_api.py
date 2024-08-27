@@ -19,7 +19,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.post("/classify")
 async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
-  print(f"[classify_url] url: {url}, token: {token}")
+  print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)}")
   try:
     # Validate token
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])

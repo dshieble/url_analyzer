@@ -31,8 +31,7 @@ docker buildx build -t   danshiebler/private:url_analyzer_run -f dockerfiles/url
 
 
 # Running Docker
-docker run -p 8000:8000  danshiebler/private:url_analyzer_run
-
+docker pull danshiebler/private:url_analyzer_run && docker run -p 8000:8000  danshiebler/private:url_analyzer_run
 
 # HTTP Endpoint
 You should have the following environment variables set
