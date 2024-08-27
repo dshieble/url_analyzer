@@ -11,7 +11,7 @@ import shutil
 
 CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   "url_analyzer": """
-  FROM python:slim
+  FROM python:3.12-bookworm
   COPY . /app
   RUN ls
   WORKDIR /app
@@ -21,12 +21,11 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   RUN mkdir /workdir
 
   RUN pip install "fastapi[standard]"
-  RUN pip install -r url_analyzer/url_analyzer/requirements.txt
-  RUN playwright install   
-  RUN playwright install-deps  
+  RUN pip install -r url_analyzer/requirements.txt
+  RUN playwright install --with-deps
 
   EXPOSE 8000
-  CMD fastapi run url_analyzer/url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000
+  CMD fastapi run url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000
   """
 }
 
@@ -58,7 +57,6 @@ def build_image(
   # build docker image
   full_tag = f"{repository}:{tag}"
   
-
   kwargs = {"platform": platform} if platform is not None else {}
   try:
     print(f"kwargs: {kwargs}")

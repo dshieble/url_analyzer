@@ -1,0 +1,8 @@
+# alternative - https://hub.docker.com/r/microsoft/playwright-python
+FROM python:3.12-bookworm
+COPY url_analyzer/requirements.txt /app/requirements.txt
+WORKDIR /app
+
+RUN pip install "fastapi[standard]"
+RUN pip install -r requirements.txt
+RUN playwright install --with-deps chromium
