@@ -65,7 +65,7 @@ async def initialize_browser_context(
     
   # disable navigator.webdriver:true flag. This is lifted from https://github.com/kaliiiiiiiiii/undetected-playwright-python as a simple solution to avoid detection
   # also discussed in https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec/69533548#69533548
-  args.append("--disable-blink-features=AutomationControlled")
+  # args.append("--disable-blink-features=AutomationControlled")
   
   if proxy_url is not None:
     # We need to ignore https errors when we run playwright through a proxy
@@ -100,6 +100,30 @@ class PlaywrightPageManager:
         print(f"WARNING: error in dialog.accept(): {e}")
     page.on("dialog", accept)
     await stealth_async(page)
+
+    await page.evaluate_on_new_document("""
+        // Disabling WebDriver property
+        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+
+        // Overwriting the user agent to avoid detection
+        const originalUserAgent = navigator.userAgent;
+        Object.defineProperty(navigator, 'userAgent', {get: () => originalUserAgent.replace('HeadlessChrome', 'Chrome')});
+
+        // Mocking the plugins property
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [1, 2, 3, 4, 5]
+        });
+
+        // Mocking the languages property
+        Object.defineProperty(navigator, 'languages', {
+            get: () => ['en-US', 'en']
+        });
+
+        // Mocking the hardwareConcurrency property
+        Object.defineProperty(navigator, 'hardwareConcurrency', {
+            get: () => 4
+        });
+    """)
 
   #   await page.add_init_script("""
   #     Object.defineProperty(Navigator.prototype, 'webdriver', {
