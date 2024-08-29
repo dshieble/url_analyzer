@@ -12,14 +12,14 @@ from url_analyzer.classification.url_classification import UrlClassificationWith
 
 app = FastAPI()
 
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
+JWT_SECRET_KEY = str(os.environ.get("JWT_SECRET_KEY"))
 
 # JWT bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.post("/classify")
 async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
-  print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)}")
+  print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)} JWT_SECRET_KEY: {JWT_SECRET_KEY}")
   try:
     # Validate token
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])

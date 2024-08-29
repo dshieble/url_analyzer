@@ -29,8 +29,26 @@ docker buildx build -t   danshiebler/private:url_analyzer_build -f dockerfiles/u
 export CURRENT_PATH=$(pwd); \
 docker buildx build -t   danshiebler/private:url_analyzer_run -f dockerfiles/urlanalyzer_run . --platform linux/amd64,linux/arm64  --push --progress plain --secret id=aws,src=$HOME/.aws/credentials --secret id=env,src=$CURRENT_PATH/.env;
 
+## Push execution image to lightsail
 
-# Running Docker
+Run
+```
+aws lightsail push-container-image --region us-east-1 --service-name container-service-1 --label url-analyzer --image danshiebler/private:url_analyzer_run
+```
+
+Then look at the message 
+```
+...
+Refer to this image as ":container-service-1.url-analyzer.1" in deployments.
+```
+
+And use that as the reference to the image in lightsail container service
+
+## Deploy docker image in lightsail
+Use 
+
+
+# Run Docker Image Locally
 docker pull danshiebler/private:url_analyzer_run && docker run -p 8000:8000  danshiebler/private:url_analyzer_run
 
 # HTTP Endpoint
