@@ -101,7 +101,7 @@ class PlaywrightPageManager:
     page.on("dialog", accept)
     await stealth_async(page)
 
-    await page.evaluate_on_new_document("""
+    await page.add_init_script("""
         // Disabling WebDriver property
         Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
 

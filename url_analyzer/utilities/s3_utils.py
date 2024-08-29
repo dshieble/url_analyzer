@@ -10,24 +10,30 @@ import aiofiles
 
 
 AWS_REGION_NAME = "us-east-1"
-AWS_PROFILE_NAME = "danshiebler"
 
 class AsyncS3Client:
 
   def __init__(
     self,
     aws_region_name: str = AWS_REGION_NAME,
-    aws_profile_name: str = AWS_PROFILE_NAME,
     buffer_length: int = 1000,
-    aws_config_file_path: Optional[str] = None,
+    aws_access_key_id: Optional[str] = None,
+    aws_secret_access_key: Optional[str] = None
   ):
-    if aws_config_file_path is not None:
-      print(f"Setting AWS_CONFIG_FILE to {aws_config_file_path}")
-      os.environ['AWS_CONFIG_FILE'] = aws_config_file_path
+
+    aws_access_key_id = aws_access_key_id if aws_access_key_id is not None else os.environ.get("AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = aws_secret_access_key if aws_secret_access_key is not None else os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+    if aws_access_key_id is None:
+      raise ValueError("aws_access_key_id must be provided either as an argument or as an environment variable")
+
+    if aws_secret_access_key is None:
+      raise ValueError("aws_secret_access_key must be provided either as an argument or as an environment variable")
 
     self.session = aioboto3.Session(
       region_name=aws_region_name,
-      profile_name=aws_profile_name
+      aws_access_key_id=aws_access_key_id,
+      aws_secret_access_key=aws_secret_access_key
     )
     self.buffer_length = buffer_length
     self.s3_buffer = {}
