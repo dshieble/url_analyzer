@@ -1,12 +1,12 @@
 import os
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request, Depends, HTTPException
 from pydantic import BaseModel
 
-from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import jwt
 
+from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
 from url_analyzer.classification.classification import spider_and_classify_url
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
 
@@ -15,6 +15,11 @@ class HealthCheck(BaseModel):
   """Response model to validate and return when performing a health check."""
 
   status: str = "OK"
+
+class ApiKey(BaseModel):
+  """Response model to validate and return when performing a health check."""
+
+  api_key: str
 
 app = FastAPI()
 
@@ -58,6 +63,13 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
   except jwt.ExpiredSignatureError:
     raise HTTPException(status_code=403, detail="Token has expired")
 
+@app.get("/get_api_key")
+async def get_ip(request: Request):
+  print(f"[get_ip] request.client.host: {request.client.host}")
+  ip_address = request.client.host
+  api_key = get_api_key_from_ip_address(ip_address=ip_address)
+  return ApiKey(api_key=api_key)
+  
 if __name__ == "__main__":
   """
   fastapi run url_analyzer/api/start_api.py  --host 0.0.0.0 --port 8000
