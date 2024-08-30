@@ -39,6 +39,7 @@ from playwright.async_api._generated import Request
 from playwright.async_api._generated import ElementHandle
 from playwright.async_api import PlaywrightContextManager
 
+from url_analyzer.browser_automation.constants import STEALTH_INIT_SCRIPT
 from url_analyzer.browser_automation.datamodel import BrowserUrlVisit, scroll_page_and_wait
 from url_analyzer.browser_automation.utilities import NetworkTracker
 
@@ -76,6 +77,7 @@ async def initialize_browser_context(
     context = await browser.new_context(storage_state=storage_state)
 
   # await context.route("**/*", remove_if_modified_since_header)
+  await context.add_init_script(STEALTH_INIT_SCRIPT)
   return browser, context
 
 @dataclass
@@ -101,46 +103,7 @@ class PlaywrightPageManager:
     page.on("dialog", accept)
     await stealth_async(page)
 
-    await page.add_init_script("""
-        // Disabling WebDriver property
-        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
 
-        // Overwriting the user agent to avoid detection
-        const originalUserAgent = navigator.userAgent;
-        Object.defineProperty(navigator, 'userAgent', {get: () => originalUserAgent.replace('HeadlessChrome', 'Chrome')});
-
-        // Mocking the plugins property
-        Object.defineProperty(navigator, 'plugins', {
-            get: () => [1, 2, 3, 4, 5]
-        });
-
-        // Mocking the languages property
-        Object.defineProperty(navigator, 'languages', {
-            get: () => ['en-US', 'en']
-        });
-
-        // Mocking the hardwareConcurrency property
-        Object.defineProperty(navigator, 'hardwareConcurrency', {
-            get: () => 4
-        });
-    """)
-
-  #   await page.add_init_script("""
-  #     Object.defineProperty(Navigator.prototype, 'webdriver', {
-  #         set: undefined,
-  #         enumerable: true,
-  #         configurable: true,
-  #         get: new Proxy(
-  #             Object.getOwnPropertyDescriptor(Navigator.prototype, 'webdriver').get,
-  #             { apply: (target, thisArg, args) => {
-  #                 // emulate getter call validation
-  #                 Reflect.apply(target, thisArg, args);
-  #                 return false;
-  #             }}
-  #         )
-  #     });
-  # """
-  # )      
 
   @classmethod
   async def construct(cls, headless: bool = True, proxy_url: Optional[str] = None) -> "PlaywrightPageManager":
@@ -277,6 +240,7 @@ class PlaywrightPageManager:
     """
 
     # https://stackoverflow.com/questions/68266451/navigating-to-url-waiting-until-load-python-playwright-issue
+    # async def take_action(page=self.page, url=url): await page.goto(url)
     async def take_action(page=self.page, url=url): await page.goto(url, wait_until="domcontentloaded")
     browser_url_visit = await BrowserUrlVisit.from_action(page=self.page, take_action=take_action)
     BrowserUrlVisit.model_validate(browser_url_visit)
