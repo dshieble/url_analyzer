@@ -1,6 +1,7 @@
 
 
 
+import base64
 import json
 import logging
 from typing import Optional
@@ -24,13 +25,26 @@ class UrlClassification(BaseModel):
   def display(self) -> str:
     return f"Thought process: {self.thought_process}\nPhishing: {self.is_phishing}\nJustification: {self.justification}"
 
+class PageData(BaseModel):
+  base64_encoded_image: Optional[bytes] = None
+
+  @classmethod
+  async def from_visited_url(cls, visited_url: VisitedUrl) -> "PageData":
+    screenshot_bytes = await visited_url.url_screenshot_response.get_screenshot_bytes()
+    base64_encoded_image = base64.b64encode(screenshot_bytes).decode("utf-8")
+    return cls(
+      base64_encoded_image=base64_encoded_image
+    )
+
 class UrlClassificationWithLLMResponse(BaseModel):
+  page_data: PageData
   url_classification: Optional[UrlClassification] = None
   llm_response: LLMResponse
 
   @classmethod
-  def from_llm_response(
+  async def from_visited_url_and_llm_response(
     cls,
+    visited_url: VisitedUrl,
     llm_response: LLMResponse
   ) -> "UrlClassificationWithLLMResponse":
     
@@ -57,6 +71,7 @@ class UrlClassificationWithLLMResponse(BaseModel):
           """
         )
     return cls(
+      page_data=await PageData.from_visited_url(visited_url=visited_url),
       url_classification=url_classification,
       llm_response=llm_response
     )
@@ -106,5 +121,5 @@ async def classify_visited_url(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
   )
-  return UrlClassificationWithLLMResponse.from_llm_response(llm_response=llm_response)
+  return await UrlClassificationWithLLMResponse.from_visited_url_and_llm_response(visited_url=visited_url, llm_response=llm_response)
 

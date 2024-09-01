@@ -2,18 +2,35 @@
 
 import json
 import logging
+import socket
 from typing import Optional
 from urllib.parse import urlparse
 
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse, classify_visited_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
+import dns.resolver
+
+
+def domain_resolves(url: str) -> bool:
+  try:
+    # Parse the domain from the URL
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc
+
+    # Attempt to resolve the domain
+    dns.resolver.resolve(domain, 'A')
+    return True
+  except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.resolver.Timeout, dns.exception.DNSException):
+    return False
 
 def validate_classification_inputs(url: str) -> Optional[str]:
   error = None
   parsed_url = urlparse(url)
   if parsed_url.scheme is None or len(parsed_url.scheme) == 0:
     error = "ERROR: URL must have a scheme (e.g. https://)"
+  elif not domain_resolves(url):
+    error = f"ERROR: The URL {url} was not found!"
   return error
 
 
