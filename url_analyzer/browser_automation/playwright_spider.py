@@ -3,13 +3,10 @@ from collections import defaultdict
 import random
 import time
 import traceback
-from pydantic import BaseModel, ValidationError, field_validator
-import sys
+from pydantic import BaseModel
 import os
 from typing import Any, Dict, List, Optional, Set, Tuple, TypeVar
 import uuid
-from playwright.async_api import async_playwright
-import asyncio
 import re
 import w3lib.url
 
@@ -190,7 +187,6 @@ class PlaywrightSpider:
     cls,
     url_list: List[str],
     included_fqdn_regex: str,
-    login_browser_url_visit: Optional[BrowserUrlVisit] = None,
     directory_root_path: Optional[str] = None,
     included_url_regex: Optional[str] = None,
     **spider_kwargs
@@ -204,8 +200,6 @@ class PlaywrightSpider:
     base_directory = os.path.join(directory_root_path, dirname)
     spider_directory = await prepare_playwright_spider_directory(base_directory=base_directory)
 
-    if login_browser_url_visit:
-      login_browser_url_visit.write_to_directory(directory=os.path.join(spider_directory, "login"))
     return PlaywrightSpider(included_fqdn_regex=included_fqdn_regex, included_url_regex=included_url_regex, directory=spider_directory, **spider_kwargs)
 
 
@@ -221,7 +215,6 @@ class PlaywrightSpider:
     self,
     url_list: List[str],
     playwright_page_manager_to_clone: Optional[PlaywrightPageManager] = None,
-    playwright_page_manager_login_kwargs: Optional[Dict[str, Any]] = None
   ):
     """
     Given set of initial urls, add these to the queue and then iteratively pop from the queue and visit each url in turn until the queue is empty
@@ -242,18 +235,8 @@ class PlaywrightSpider:
       if url in self.visited_urls:
         raise ValueError(f"Url {url} has already been visited!")
 
-      if playwright_page_manager_to_clone is not None:
-        assert playwright_page_manager_login_kwargs is None
-        # Clone the playwright page manager and use the cloned manager to visit
-        async with PlaywrightPageManagerCloneContext(playwright_page_manager_to_clone) as spider_playwright_page_manager:
-          await self._visit(url=url, playwright_page_manager=spider_playwright_page_manager)
-      elif playwright_page_manager_login_kwargs is not None:
-        assert playwright_page_manager_to_clone is None
-        # Regenerate the PlaywrightPageManager from the login kwargs and use that to visit
-        async with PlaywrightPageManagerLoginContext(**playwright_page_manager_login_kwargs) as (spider_playwright_page_manager, _):
-          await self._visit(url=url, playwright_page_manager=spider_playwright_page_manager)
-      else:
-        raise ValueError("Must provide either playwright_page_manager_to_clone or playwright_page_manager_login_kwargs!")
+      async with PlaywrightPageManagerCloneContext(playwright_page_manager_to_clone) as spider_playwright_page_manager:
+        await self._visit(url=url, playwright_page_manager=spider_playwright_page_manager)
 
   def _enqueue_url(self, url: str):
     """
@@ -411,16 +394,13 @@ async def prepare_playwright_spider_directory(base_directory: str) -> str:
   await run_with_logs("mkdir", base_directory, process_name="mkdir base")
   await run_with_logs("mkdir", spider_directory, process_name="mkdir spider")
   await run_with_logs("mkdir", os.path.join(spider_directory, "images"), process_name="mkdir images")
-  await run_with_logs("mkdir", os.path.join(spider_directory, "login"), process_name="mkdir login")
   return spider_directory
 
 async def run_playwright_spider_from_playwright_page_manager(
   url_list: str,
   included_fqdn_regex: str,
-  login_browser_url_visit: Optional[BrowserUrlVisit] = None,
   directory_root_path: Optional[str] = None,
   playwright_page_manager_to_clone: Optional[PlaywrightPageManager] = None,
-  playwright_page_manager_login_kwargs: Optional[Dict[str, Any]] = None,
   included_url_regex: Optional[str] = None,
   **spider_kwargs
 ) -> PlaywrightSpider:
@@ -429,7 +409,6 @@ async def run_playwright_spider_from_playwright_page_manager(
     url_list: The list of urls to start the spider on
     included_fqdn_regex: The regex that determines which fqdns are in scope for the spider
     playwright_page_manager: The PlaywrightPageManager to use for the spider
-    login_browser_url_visit: The BrowserUrlVisit associated with the page manager login. This is not needed for the spider to run, but we write it to disk in this method if it is provided.
     directory_root_path: The root directory to write the spider results to. If not provided, we use the default directory root path
     spider_kwargs: The kwargs to pass to the PlaywrightSpider constructor
   """
@@ -444,49 +423,11 @@ async def run_playwright_spider_from_playwright_page_manager(
   base_directory = os.path.join(directory_root_path, dirname)
   spider_directory = await prepare_playwright_spider_directory(base_directory=base_directory)
 
-  if login_browser_url_visit:
-    login_browser_url_visit.write_to_directory(directory=os.path.join(spider_directory, "login"))
   spider = PlaywrightSpider(included_fqdn_regex=included_fqdn_regex, included_url_regex=included_url_regex, directory=spider_directory, **spider_kwargs)
 
   await spider.run(
     url_list=url_list,
     playwright_page_manager_to_clone=playwright_page_manager_to_clone,
-    playwright_page_manager_login_kwargs=playwright_page_manager_login_kwargs
   )
   return spider
 
-async def run_playwright_spider(
-  login_url: Optional[str] = None,
-  user_supplied_login_arg_keys: Optional[List[str]] = None,
-  user_supplied_login_arg_values: Optional[List[str]] = None,
-  not_headless: bool = False,
-  rerun_login_on_every_visit: bool = False,
-  **run_playwright_spider_kwargs
-) -> PlaywrightSpider:
-  """
-  TODO: Enforce a maximum number of visits for each base (non-parameterized) url
-  """
-  async with PlaywrightPageManagerLoginContext(
-    login_url=login_url,
-    user_supplied_login_arg_keys=user_supplied_login_arg_keys,
-    user_supplied_login_arg_values=user_supplied_login_arg_values,
-    not_headless=not_headless
-  ) as (playwright_page_manager, login_browser_url_visit):
-    if rerun_login_on_every_visit:
-      spider = await run_playwright_spider_from_playwright_page_manager(
-        login_browser_url_visit=login_browser_url_visit,
-        playwright_page_manager_login_kwargs={
-          "login_url": login_url,
-          "user_supplied_login_arg_keys": user_supplied_login_arg_keys,
-          "user_supplied_login_arg_values": user_supplied_login_arg_values,
-          "not_headless": not_headless
-        },
-        **run_playwright_spider_kwargs,
-      )
-    else:
-      spider = await run_playwright_spider_from_playwright_page_manager(
-        playwright_page_manager_to_clone=playwright_page_manager,
-        login_browser_url_visit=login_browser_url_visit,
-        **run_playwright_spider_kwargs
-      )
-  return spider

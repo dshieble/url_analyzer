@@ -1,11 +1,11 @@
-- display the image alongside the url description on the react page
+
+- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
+- switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
+- add IP and domain intelligence to the response
 
 
 - switch to a SQL data storage scheme
-- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
-- switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
 - record a summary of the image of the home page
-- add IP and domain intelligence
 - move JWT secret key storage to secrets manager
 
 
