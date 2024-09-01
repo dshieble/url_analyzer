@@ -1,1 +1,0 @@
-docker buildx build -t   danshiebler/private:url_analyzer_build -f dockerfiles/urlanalyzer_build . --platform linux/amd64,linux/arm64  --push --progress plain --secret id=aws,src=$HOME/.aws/credentials --secret id=env,src=$HOME/.env;

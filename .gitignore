@@ -16,3 +16,4 @@ logs/*
 cmd
 resources
 set_env.sh
+docker_lightsail_deploy.sh

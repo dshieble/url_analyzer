@@ -1,5 +1,7 @@
 import os
 from fastapi import FastAPI, status, Request, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
 from pydantic import BaseModel
 
 from fastapi.security import OAuth2PasswordBearer
@@ -22,6 +24,17 @@ class ApiKey(BaseModel):
   api_key: str
 
 app = FastAPI()
+
+# Allow CORS for the specified domain
+allow_origins = ["*"] if os.environ.get("ALLOW_CORS") == "True" else ["https://zerophishing-react-live.vercel.app"]
+print(f"[CORSMiddleware] allow_origins: {allow_origins}")
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=allow_origins,
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
 
 JWT_SECRET_KEY = str(os.environ.get("JWT_SECRET_KEY"))
 
