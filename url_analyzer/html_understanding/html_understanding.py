@@ -45,6 +45,9 @@ from url_analyzer.llm.formatting_utils import find_json_string
 from url_analyzer.llm.utilities import cutoff_string_at_token_count, get_diff_string_from_html_strings
 
 
+SUSPICIOUS_KEYWORDS = ['password', 'login', 'verify', 'account', 'bank', 'urgent', 'security', 'update']
+
+
 @dataclass
 class LLMFormContent:
   """
@@ -287,3 +290,61 @@ async def describe_website(playwright_driver: PlaywrightDriver) -> Maybe[Website
       ocr_screenshot_text=ocr_screenshot_text
     ))
   return maybe_website_description
+
+
+
+def find_context(text: str, start: int, length: int = 200) -> str:
+  # Extract a portion of the text around a specific index
+  start_index = max(start - length, 0)
+  end_index = min(start + length, len(text))
+  return text[start_index:end_index].strip()
+
+def extract_links_context(html: str, soup: BeautifulSoup) -> List[str]:
+  # Extract context around links (<a href>)
+  contexts = []
+  for a in soup.find_all('a', href=True):
+    link = a['href']
+    link_index = html.find(link)
+    if link_index != -1:
+      context = find_context(html, link_index)
+      contexts.append(f"Link: {link}\nContext: {context}")
+  return contexts
+
+def extract_emails_context(html: str) -> List[str]:
+  # Extract context around email addresses
+  contexts = []
+  for match in re.finditer(r'[\w\.-]+@[\w\.-]+', html):
+    email = match.group(0)
+    email_index = match.start()
+    context = find_context(html, email_index)
+    contexts.append(f"Email: {email}\nContext: {context}")
+  return contexts
+
+def extract_keywords_context(html: str) -> List[str]:
+  # Example suspicious keywords for phishing detection
+  contexts = []
+  for keyword in SUSPICIOUS_KEYWORDS:
+    for match in re.finditer(keyword, html, re.IGNORECASE):
+      keyword_index = match.start()
+      context = find_context(html, keyword_index)
+      contexts.append(f"Keyword: {keyword}\nContext: {context}")
+  return contexts
+
+def process_html_for_llm(
+  html_string: str,
+  max_attribute_token_count: int = 1000
+) -> Dict[str, List[str]]:
+  # Parse the HTML
+  soup = BeautifulSoup(html_string, 'html.parser')
+  
+  # Extract relevant contexts
+  links_context = extract_links_context(html_string, soup)
+  emails_context = extract_emails_context(html_string)
+  keywords_context = extract_keywords_context(html_string)
+  
+  # Construct a compact representation
+  return {
+    "links": cutoff_string_at_token_count(str(links_context), max_token_count=max_attribute_token_count),
+    "emails": cutoff_string_at_token_count(str(emails_context), max_token_count=max_attribute_token_count),
+    "keywords": cutoff_string_at_token_count(str(keywords_context), max_token_count=max_attribute_token_count),
+  }

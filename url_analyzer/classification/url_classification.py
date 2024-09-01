@@ -15,6 +15,7 @@ from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
 from url_analyzer.llm.formatting_utils import load_function_call
+from url_analyzer.html_understanding.html_understanding import process_html_for_llm
 from url_analyzer.utilities.utilities import Maybe
 
 class UrlClassification(BaseModel):
@@ -76,21 +77,48 @@ class UrlClassificationWithLLMResponse(BaseModel):
       llm_response=llm_response
     )
 
-def _response_record_to_string(response_record: ResponseRecord) -> str:
-  return f"{response_record.request_method} to {response_record.request_url} with data {response_record.request_post_data}"
-
+def get_network_log_string_from_response_log(
+  response_log: list[ResponseRecord],
+  link_token_count_max: int = 100,
+  total_token_count_max: int = 5000
+) -> str:
+  
+  processed_response_record_list = [
+    f"{response_record.request_method} to "
+      + cutoff_string_at_token_count(
+        string=response_record.request_url,
+        max_token_count=link_token_count_max
+      )
+      + ("" if response_record.request_post_data is None else f"with data {response_record.request_post_data}")
+    for response_record in response_log
+  ]
+  raw_processed_response_record_list_string = "\n".join(
+    processed_response_record_list
+  )
+  return cutoff_string_at_token_count(
+    string=raw_processed_response_record_list_string,
+    max_token_count=total_token_count_max
+  )
+    
 def convert_visited_url_to_string(
   visited_url: VisitedUrl,
   max_html_token_count: int = 2000,
+  max_attribute_token_count: int = 1000,
+  jsonify_html: bool = True,
 ) -> str:
-  html = visited_url.open_url_browser_url_visit.ending_html
-  
+  stripped_html_string = remove_html_comments(html=visited_url.open_url_browser_url_visit.ending_html)
+  if jsonify_html:
+    raw_html_summary = json.dumps(
+      process_html_for_llm(html_string=stripped_html_string, max_attribute_token_count=max_attribute_token_count)
+    )
+  else:
+    raw_html_summary = stripped_html_string
   trimmed_ending_html = cutoff_string_at_token_count(
-    string=remove_html_comments(html=html), max_token_count=max_html_token_count)
+    string=raw_html_summary, max_token_count=max_html_token_count)
 
-  network_log_string = "\n".join(
-    [_response_record_to_string(response_record) for response_record in visited_url.open_url_browser_url_visit.response_log]
-  )
+  network_log_string = get_network_log_string_from_response_log(response_log=visited_url.open_url_browser_url_visit.response_log)
+  
+
   return VISITED_URL_PROMPT_STRING_TEMPLATE.format(
     url=visited_url.url,
     trimmed_html=trimmed_ending_html,
@@ -98,13 +126,23 @@ def convert_visited_url_to_string(
     network_log_string=network_log_string
   )
 
+
+async def get_phishing_classification_prompt_from_visited_url(
+  visited_url: VisitedUrl,
+  max_html_token_count: int = 4000,
+) -> str:
+  visited_url_string = convert_visited_url_to_string(visited_url=visited_url, max_html_token_count=max_html_token_count)
+  return PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(visited_url_string=visited_url_string)
+
 async def get_raw_url_classification_llm_response_from_visited_url(
   visited_url: VisitedUrl,
   max_html_token_count: int = 2000,
 ) -> LLMResponse:
-  visited_url_string = convert_visited_url_to_string(visited_url=visited_url, max_html_token_count=max_html_token_count)
 
-  phishing_classification_prompt = PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(visited_url_string=visited_url_string)
+  phishing_classification_prompt = get_phishing_classification_prompt_from_visited_url(
+    visited_url=visited_url,
+    max_html_token_count=max_html_token_count,
+  )
   llm_response = await get_response_from_prompt_one_shot(
     prompt=phishing_classification_prompt,
     tools=[CLASSIFICATION_FUNCTION],
