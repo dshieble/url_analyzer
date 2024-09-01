@@ -8,8 +8,8 @@ import jwt
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
-from url_analyzer.url_analyzer.html_understanding.html_understanding import LLMPageContent
+from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
+from url_analyzer.html_understanding.html_understanding import LLMPageContent
 
 
 
