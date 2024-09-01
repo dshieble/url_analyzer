@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from fastapi import FastAPI, status, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -9,9 +10,12 @@ from pydantic import BaseModel
 import jwt
 
 from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
-from url_analyzer.classification.classification import spider_and_classify_url
+from url_analyzer.classification.classification import spider_and_classify_url, validate_classification_inputs
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
 
+class MaybeUrlClassificationWithLLMResponse(BaseModel):
+  data: Optional[UrlClassificationWithLLMResponse]
+  error: str
 
 class HealthCheck(BaseModel):
   """Response model to validate and return when performing a health check."""
@@ -41,6 +45,8 @@ JWT_SECRET_KEY = str(os.environ.get("JWT_SECRET_KEY"))
 # JWT bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
+
 @app.get(
   "/",
   tags=["healthcheck"],
@@ -62,19 +68,24 @@ def get_health() -> HealthCheck:
   return HealthCheck(status="OK")
 
 @app.post("/classify")
-async def classify_url(url: str, token: str = Depends(oauth2_scheme)):
+async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> UrlClassificationWithLLMResponse:
   print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)} JWT_SECRET_KEY: {JWT_SECRET_KEY}")
-  try:
-    # Validate token
-    payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
-    print("[classify_url] payload", payload)
-    url_classification_with_llm_response = await spider_and_classify_url(
-      url=url
-    )
-    # return url_classification_with_llm_response.model_dump_json()
-    return url_classification_with_llm_response
-  except jwt.ExpiredSignatureError:
-    raise HTTPException(status_code=403, detail="Token has expired")
+
+  error = validate_classification_inputs(url=url)
+  if error is not None:
+    raise HTTPException(status_code=500, detail=error)
+  else:
+    try:
+      # Validate token
+      payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+      print("[classify_url] payload", payload)
+      url_classification_with_llm_response = await spider_and_classify_url(
+        url=url
+      )
+      # return url_classification_with_llm_response.model_dump_json()
+      return UrlClassificationWithLLMResponse(data=url_classification_with_llm_response)
+    except jwt.ExpiredSignatureError:
+      raise HTTPException(status_code=403, detail="Token has expired")
 
 @app.get("/get_api_key")
 async def get_ip(request: Request):
