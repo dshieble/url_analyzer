@@ -42,3 +42,5 @@ pyjwt
 uvicorn
 trafilatura
 markdownify
+asyncwhois
+whodap
