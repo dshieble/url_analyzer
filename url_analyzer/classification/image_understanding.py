@@ -1,7 +1,8 @@
 
 
+import logging
 from typing import Optional
-from url_analyzer.classification.prompts import PHISHING_CLASSIFICATION_PROMPT_TEMPLATE
+from url_analyzer.classification.prompts import IMAGE_DESCRIPTION_PROMPT_TEMPLATE, IMAGE_DESCRIPTION_STRING_TEMPLATE
 from url_analyzer.llm.openai_interface import DEFAULT_VISION_MODEL_NAME, get_response_from_prompt_one_shot
 from url_analyzer.browser_automation.playwright_spider import VisitedUrl
 from url_analyzer.utilities.utilities import Maybe
@@ -13,7 +14,7 @@ async def get_image_summary(
   model_name: str = DEFAULT_VISION_MODEL_NAME
 ) -> Optional[str]:
   
-  prompt = PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(url=url)
+  prompt = IMAGE_DESCRIPTION_PROMPT_TEMPLATE.format(url=url)
   llm_response = await get_response_from_prompt_one_shot(
     prompt=prompt,
     image_path=image_path,
@@ -27,8 +28,17 @@ async def get_image_description_string_from_visited_url(
   visited_url: VisitedUrl,
   model_name: str = DEFAULT_VISION_MODEL_NAME
 ) -> Optional[str]:
-  return await get_image_summary(
+  llm_written_screenshot_description = await get_image_summary(
     url=visited_url.url,
-    image_path=visited_url.screenshot_path,
+    image_path=visited_url.url_screenshot_response.screenshot_path,
     model_name=model_name
   )
+
+  if llm_written_screenshot_description is not None:
+    image_description_string = IMAGE_DESCRIPTION_STRING_TEMPLATE.format(
+      llm_written_screenshot_description=llm_written_screenshot_description
+    )
+  else:
+    logging.error(f"Could not generate an LLM image description for {visited_url.url}")
+    image_description_string = None
+  return image_description_string

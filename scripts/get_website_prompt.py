@@ -54,8 +54,8 @@ if __name__ == "__main__":
     --max-html-token-count 4000
 
   python scripts/get_website_prompt.py \
-    --url https://nyt.com \
-    --html-encoding minify_markdown \
+    --url https://danshiebler.com \
+    --html-encoding trafilatura \
     --max-html-token-count 4000
   
   """

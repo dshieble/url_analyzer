@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from url_analyzer.browser_automation.playwright_spider import VisitedUrl
 from url_analyzer.browser_automation.response_record import ResponseRecord
 from url_analyzer.browser_automation.utilities import remove_html_comments
-from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIFY_URL, PHISHING_CLASSIFICATION_PROMPT_TEMPLATE, VISITED_URL_PROMPT_STRING_TEMPLATE
+from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIFY_URL, IMAGE_DESCRIPTION_STRING_TEMPLATE, PHISHING_CLASSIFICATION_PROMPT_TEMPLATE, VISITED_URL_PROMPT_STRING_TEMPLATE
 from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
@@ -120,8 +120,7 @@ async def convert_visited_url_to_string(
   if generate_llm_screenshot_description:
     logging.info(f"Generating an LLM image description of the url screenshot for {visited_url.url}")
     optional_image_description_string = await get_image_description_string_from_visited_url(visited_url=visited_url)
-
-    image_description_string = "" if optional_image_description_string is None else optional_image_description_string
+    image_description_string = optional_image_description_string if optional_image_description_string is not None else ""
   else:
     logging.info(f"Skipping image description generation for {visited_url.url}")
     image_description_string = ""
