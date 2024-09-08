@@ -1,7 +1,9 @@
-- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
+
+- figure out a better screenshot strategy to cover multi-page screenshots (e.g. screenshot the first page cleanly and then scroll to get other screenshots)
+
+- increase speed of the logic to fetch the HTML+Image
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
 - add IP and domain intelligence to the response
-- figure out a better screenshot strategy to cover multi-page screenshots (e.g. screenshot the first page cleanly and then scroll to get other screenshots)
 
 - switch to a SQL data storage scheme
 - record a summary of the image of the home page
@@ -15,7 +17,8 @@
 
 
 
-
+- integrate with webarena schema, especially viewport visible HTML https://github.com/web-arena-x/webarena/blob/1469b7c9d8eaec3177855b3131569751f43a40d6/browser_env/processors.py#L174
 
 
 xxx- figure out how to capture popups etc to prevent screenshots of the wrong page
+xx- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)

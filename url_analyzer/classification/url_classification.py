@@ -16,7 +16,7 @@ from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
 from url_analyzer.llm.formatting_utils import load_function_call
-from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string, process_html_for_llm
+from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string
 from url_analyzer.utilities.utilities import Maybe
 
 class UrlClassification(BaseModel):
@@ -105,26 +105,39 @@ def get_network_log_string_from_response_log(
 
 def convert_visited_url_to_string(
   visited_url: VisitedUrl,
-  max_html_token_count: int = 2000,
-  max_attribute_token_count: int = 1000,
+  max_html_token_count: int = 4000,
+  max_urls_on_page_string_token_count: int = 4000,
+  max_network_log_string_token_count: int = 4000,
   html_encoding: str = HTMLEncoding.RAW
 ) -> str:
+  
+  # HTML String
   processed_html_string = get_processed_html_string(
     html=visited_url.open_url_browser_url_visit.ending_html,
-    html_encoding=html_encoding,
-    max_attribute_token_count=max_attribute_token_count
+    html_encoding=html_encoding
   )
   trimmed_ending_html = cutoff_string_at_token_count(
     string=processed_html_string, max_token_count=max_html_token_count)
 
+  # Urls on Page String 
+  # TODO: Do something smarter where you order urls by domain in a way that you preferentially cut off urls from domains where other urls are in the prompt
+  trimmed_urls_on_page_string = cutoff_string_at_token_count(
+    string="\n".join(visited_url.urls_on_page),
+    max_token_count=max_urls_on_page_string_token_count
+  )
+
+  # Network Log String
   network_log_string = get_network_log_string_from_response_log(response_log=visited_url.open_url_browser_url_visit.response_log)
-  
+  trimmed_network_log_string = cutoff_string_at_token_count(
+    string=network_log_string,
+    max_token_count=max_network_log_string_token_count
+  )
 
   return VISITED_URL_PROMPT_STRING_TEMPLATE.format(
     url=visited_url.url,
     trimmed_html=trimmed_ending_html,
-    urls_on_page_string="\n".join(visited_url.urls_on_page),
-    network_log_string=network_log_string
+    urls_on_page_string=trimmed_urls_on_page_string,
+    network_log_string=trimmed_network_log_string
   )
 
 

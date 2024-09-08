@@ -6,7 +6,7 @@ import socket
 from typing import Optional
 from urllib.parse import urlparse
 
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
+from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
 from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse, classify_visited_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
 import dns.resolver
@@ -39,12 +39,13 @@ async def spider_and_classify_url(
   headless: bool = True,
   included_fqdn_regex: Optional[str] = None,
   max_html_token_count: int = 2000,
+  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
 ) -> UrlClassificationWithLLMResponse:
   
   playwright_spider = await PlaywrightSpider.construct(
     url_list=[url],
     included_fqdn_regex=(".*" if included_fqdn_regex is None else included_fqdn_regex),
-    capture_screenshot=True,
+    capture_screenshot=screenshot_type,
   )
   async with PlaywrightPageManagerContext(playwright_page_manager=(
     await PlaywrightPageManager.construct(headless=headless)

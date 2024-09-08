@@ -14,7 +14,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
 from url_analyzer.html_understanding.html_understanding import HTMLEncoding, LLMPageContent
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
+from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
 from url_analyzer.classification.url_classification import get_phishing_classification_prompt_from_visited_url
 from url_analyzer.llm.utilities import get_token_count_from_prompt
 
@@ -26,7 +26,7 @@ async def main(args):
   playwright_spider = await PlaywrightSpider.construct(
     url_list=[args.url],
     included_fqdn_regex=".*",
-    capture_screenshot=True,
+    screenshot_type=args.screenshot_type
   )
   
   async with PlaywrightPageManagerContext(playwright_page_manager=(
@@ -40,7 +40,7 @@ async def main(args):
 
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
-    max_html_token_count=2000,
+    max_html_token_count=int(args.max_html_token_count),
     html_encoding=args.html_encoding
   )
   print(phishing_classification_prompt)
@@ -48,16 +48,23 @@ async def main(args):
 
 if __name__ == "__main__":
   """
-  
   python scripts/describe_website.py \
     --url https://nyt.com \
-    --html-encoding minify_markdown
+    --html-encoding trafilatura \
+    --max-html-token-count 4000
+
+  python scripts/describe_website.py \
+    --url https://nyt.com \
+    --html-encoding minify_markdown \
+    --max-html-token-count 4000
   
   """
 
   parser = argparse.ArgumentParser()
   parser.add_argument("--url", type=str, required=True)
   parser.add_argument("--html-encoding", type=str, default="raw")
+  parser.add_argument("--max-html-token-count", type=int, default=4000)
+  parser.add_argument("--screenshot_type", type=str, default=ScreenshotType.VIEWPORT_SCREENSHOT)
 
 
   args = parser.parse_args()

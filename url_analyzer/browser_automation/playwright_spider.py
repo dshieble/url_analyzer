@@ -29,6 +29,21 @@ MAX_BODY_TEXT_LENGTH = 10000
 DEFAULT_PLAYWRIGHT_SPIDER_DIRECTORY_ROOT_PATH = os.path.join( os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), "outputs/playwright_scanner_outputs")
 SPIDER_DIRECTORY_NAME = "spider"
 
+class ScreenshotType:
+  VIEWPORT_SCREENSHOT = "viewport"
+  FULL_PAGE_SCREENSHOT = "full_page"
+  NO_SCREENSHOT = "no_screenshot"
+
+  @classmethod
+  def get_image_root_path_from_screenshot_type(cls, screenshot_type: str) -> Optional[str]:
+    if screenshot_type == cls.NO_SCREENSHOT:
+      image_root_path = None
+    elif screenshot_type in [cls.VIEWPORT_SCREENSHOT, cls.FULL_PAGE_SCREENSHOT]:
+      image_root_path = os.path.join(BASE_LOG_DIRECTORY, "images")
+    else:
+      raise ValueError(f"Invalid screenshot type {screenshot_type}")
+    return image_root_path
+
 class VisitedUrlForm(BaseModel):
   field_name_to_value: Dict[str, str]
   browser_url_visit: BrowserUrlVisit
@@ -147,7 +162,7 @@ class PlaywrightSpider:
     verbose: bool = True, 
     explore_dynamically: bool = False,
     submit_forms: bool = True,
-    capture_screenshot: bool = False,
+    screenshot_type: str = ScreenshotType.NO_SCREENSHOT,
     max_urls_per_base_url: int = 3,
     max_url_count: int = 1000,
     included_url_regex: Optional[str] = None
@@ -160,7 +175,7 @@ class PlaywrightSpider:
     self.submit_forms = submit_forms
     self.explore_dynamically = explore_dynamically
 
-    self.capture_screenshot = capture_screenshot
+    self.screenshot_type = screenshot_type
 
     # This is the largest number of different parameters we will visit for each base url
     self.max_urls_per_base_url = max_urls_per_base_url
@@ -170,10 +185,7 @@ class PlaywrightSpider:
 
     self.enqueued_base_url_to_parameterized_url_set = defaultdict(set)
 
-    if self.capture_screenshot:
-      self.image_root_path = os.path.join(self.directory, "images")
-    else:
-      self.image_root_path = None
+    self.image_root_path = ScreenshotType.get_image_root_path_from_screenshot_type(screenshot_type=self.screenshot_type)
 
     self.visited_urls = {}
     self.url_queue = PrefixOptimizedSingleVisitQueue.construct(name="url_queue")
@@ -315,7 +327,7 @@ class PlaywrightSpider:
         playwright_page_manager=playwright_page_manager,
         explore_dynamically=self.explore_dynamically,
         submit_forms=self.submit_forms,
-        capture_screenshot=self.capture_screenshot,
+        screenshot_type=self.screenshot_type,
         image_root_path=self.image_root_path,
         verbose=self.verbose,
         logger=logger
@@ -330,19 +342,31 @@ async def get_visited_url_from_browser_url_visit(
   logger: Logger,
   explore_dynamically: bool = False,
   submit_forms: bool = True,
-  capture_screenshot: bool = False,
-  image_root_path: Optional[str] = None,
   verbose: bool = True,
   max_starting_signature_count_for_dynamic_exploration: Optional[int] = 10,
-  max_total_sequence_signature_count_for_dynamic_exploration: Optional[int] = 20
+  max_total_sequence_signature_count_for_dynamic_exploration: Optional[int] = 20,
+  screenshot_type: str = ScreenshotType.NO_SCREENSHOT,
+  image_root_path: Optional[str] = None,
 ) -> Tuple[VisitedUrl, List[str]]:
   
-  if capture_screenshot:
+  if screenshot_type != ScreenshotType.NO_SCREENSHOT:
     if image_root_path is None:
       raise ValueError("Cannot capture screenshot without image_root_path!")
     if verbose:
       logger.log(f"Taking screenshot of url {url}...")
-    url_screenshot_response = await get_url_screenshot_response_from_loaded_page(page=playwright_page_manager.page, image_root_path=image_root_path)
+
+    if screenshot_type == ScreenshotType.VIEWPORT_SCREENSHOT:
+      take_full_page_screenshot = False
+    elif screenshot_type == ScreenshotType.FULL_PAGE_SCREENSHOT:
+      take_full_page_screenshot = True
+    else:
+      raise ValueError(f"Invalid screenshot_type {screenshot_type}")
+
+    url_screenshot_response = await get_url_screenshot_response_from_loaded_page(
+      page=playwright_page_manager.page,
+      image_root_path=image_root_path,
+      take_full_page_screenshot=take_full_page_screenshot
+    )
     if verbose:
       logger.log(f"Wrote screenshot of url {url} to {url_screenshot_response.screenshot_path}")
   else:

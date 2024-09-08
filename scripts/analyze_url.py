@@ -9,14 +9,14 @@ import asyncio
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
+from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
 
 async def main(args):
 
   playwright_spider = await PlaywrightSpider.construct(
     url_list=[args.target_url],
     included_fqdn_regex=(".*" if args.included_fqdn_regex is None else args.included_fqdn_regex),
-    capture_screenshot=True,
+    screenshot_type=args.screenshot_type
   )
   async with PlaywrightPageManagerContext(playwright_page_manager=(
     await PlaywrightPageManager.construct(headless=not args.not_headless)
@@ -44,6 +44,7 @@ if __name__ == "__main__":
   parser.add_argument("--target_url", type=str, required=True)
   parser.add_argument("--included_fqdn_regex", type=str, default=None)
   parser.add_argument("--not_headless",  action="store_true")
+  parser.add_argument("--screenshot_type", type=str, default=ScreenshotType.VIEWPORT_SCREENSHOT)
 
 
   args = parser.parse_args()

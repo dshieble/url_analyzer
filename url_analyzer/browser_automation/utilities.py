@@ -76,7 +76,10 @@ async def load_page(
   return page_load_response
 
 
-async def get_html_and_screenshot(page: Page) -> Tuple[str, Optional[bytes]]:
+async def get_html_and_screenshot(
+  page: Page,
+  full_page: bool = False
+) -> Tuple[str, Optional[bytes]]:
   """
   Get the html and screenshot from a page. Does not reload the page
   """
@@ -85,7 +88,7 @@ async def get_html_and_screenshot(page: Page) -> Tuple[str, Optional[bytes]]:
     # Empty html has just html, head, and body
     screenshot = None
   else:
-    screenshot = await page.screenshot(type="png", full_page=True)
+    screenshot = await page.screenshot(type="png", full_page=full_page)
   return html, screenshot
 
 
@@ -96,6 +99,7 @@ async def get_url_screenshot_response_from_loaded_page(
   scroll_timeout: int = 500,
   timestamp: Optional[int] = None,
   s3_client: Optional[AsyncS3Client] = None,
+  take_full_page_screenshot: bool = False
 ) -> UrlScreenshotResponse:
   """
   Take a screenshot from a page that is assumed to have already been loaded and therefore does not need to be reloaded. The screenshot will be written to s3.
@@ -112,7 +116,7 @@ async def get_url_screenshot_response_from_loaded_page(
       url=page.url, timestamp=timestamp, page_load_response=page_load_response, navigation_error=str(e))
   else:
     try:
-      html, screenshot_bytes = await get_html_and_screenshot(page=page)
+      html, screenshot_bytes = await get_html_and_screenshot(page=page, full_page=take_full_page_screenshot)
     except Exception as e:
       url_screenshot_response = UrlScreenshotResponse(
         url=page.url, timestamp=timestamp, page_load_response=page_load_response, content_error=str(e))
@@ -131,7 +135,8 @@ async def get_url_screenshot_response(
   page: Page,
   url: Optional[str] = None,
   s3_client: Optional[AsyncS3Client] = None,
-  scroll_timeout: int = 500
+  scroll_timeout: int = 500,
+  take_full_page_screenshot: bool = False
 ) -> UrlScreenshotResponse:
   url = page.url if url is None else url
   s3_client = AsyncS3Client() if s3_client is None else s3_client
@@ -148,7 +153,12 @@ async def get_url_screenshot_response(
     url_screenshot_response = UrlScreenshotResponse(
       url=url, timestamp=timestamp, page_load_response=page_load_response)
   else:
-    url_screenshot_response = await get_url_screenshot_response_from_loaded_page(page=page, scroll_timeout=scroll_timeout, timestamp=timestamp)
+    url_screenshot_response = await get_url_screenshot_response_from_loaded_page(
+      page=page,
+      scroll_timeout=scroll_timeout,
+      timestamp=timestamp,
+      take_full_page_screenshot=take_full_page_screenshot
+    )
     
               
   return url_screenshot_response
