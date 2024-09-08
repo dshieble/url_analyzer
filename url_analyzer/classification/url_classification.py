@@ -17,6 +17,7 @@ from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
 from url_analyzer.llm.formatting_utils import load_function_call
 from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string
+from url_analyzer.classification.image_understanding import get_image_description_string_from_visited_url
 from url_analyzer.utilities.utilities import Maybe
 
 class UrlClassification(BaseModel):
@@ -103,14 +104,28 @@ def get_network_log_string_from_response_log(
 
 
 
-def convert_visited_url_to_string(
+async def convert_visited_url_to_string(
   visited_url: VisitedUrl,
   max_html_token_count: int = 4000,
   max_urls_on_page_string_token_count: int = 4000,
   max_network_log_string_token_count: int = 4000,
-  html_encoding: str = HTMLEncoding.RAW
+  html_encoding: str = HTMLEncoding.RAW,
+  generate_llm_screenshot_description: bool = True
 ) -> str:
-  
+  """
+  A method to convert a VisitedUrl object to a string that can be used as a prompt for an LLM
+  """
+  logging.info(f"Converting visited url to string: {visited_url.url}")
+
+  if generate_llm_screenshot_description:
+    logging.info(f"Generating an LLM image description of the url screenshot for {visited_url.url}")
+    optional_image_description_string = await get_image_description_string_from_visited_url(visited_url=visited_url)
+
+    image_description_string = "" if optional_image_description_string is None else optional_image_description_string
+  else:
+    logging.info(f"Skipping image description generation for {visited_url.url}")
+    image_description_string = ""
+
   # HTML String
   processed_html_string = get_processed_html_string(
     html=visited_url.open_url_browser_url_visit.ending_html,
@@ -135,6 +150,7 @@ def convert_visited_url_to_string(
 
   return VISITED_URL_PROMPT_STRING_TEMPLATE.format(
     url=visited_url.url,
+    image_description_string=image_description_string,
     trimmed_html=trimmed_ending_html,
     urls_on_page_string=trimmed_urls_on_page_string,
     network_log_string=trimmed_network_log_string
@@ -146,7 +162,7 @@ async def get_phishing_classification_prompt_from_visited_url(
   max_html_token_count: int = 4000,
   html_encoding: str = HTMLEncoding.RAW
 ) -> str:
-  visited_url_string = convert_visited_url_to_string(
+  visited_url_string = await convert_visited_url_to_string(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
     html_encoding=html_encoding)

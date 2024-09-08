@@ -23,7 +23,8 @@ DEFAULT_REQUEST_TO_GENERATE_FUNCTION_PROMPT = "Okay, please call one of the prov
 
 DEFAULT_MODEL_NAME = "gpt-4o-mini"
 BEST_MODEL_NAME = "gpt-4o"
-GPT4_VISION_MODEL_NAME = "gpt-4-vision-preview"
+DEFAULT_VISION_MODEL_NAME = "gpt-4o-mini"
+# DEFAULT_VISION_MODEL_NAME = "gpt-4-vision-preview"
 
 @dataclass
 class LLMResponseWithHistory:

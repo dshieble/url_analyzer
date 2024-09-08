@@ -1,13 +1,17 @@
+- pipe a description of the image to the LLM classification logic
 
-- figure out a better screenshot strategy to cover multi-page screenshots (e.g. screenshot the first page cleanly and then scroll to get other screenshots)
+- add IP and domain intelligence to the response
+
+- try switching to Gemini Flash as a simple free option https://ai.google.dev/pricing
+
 
 - increase speed of the logic to fetch the HTML+Image
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
-- add IP and domain intelligence to the response
 
 - switch to a SQL data storage scheme
 - record a summary of the image of the home page
 - move JWT secret key storage to secrets manager
+- revisit full page screenshots with something that can scale better
 
 
 - build an authentication engine with user creation

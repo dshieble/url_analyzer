@@ -48,12 +48,12 @@ async def main(args):
 
 if __name__ == "__main__":
   """
-  python scripts/describe_website.py \
+  python scripts/get_website_prompt.py \
     --url https://nyt.com \
     --html-encoding trafilatura \
     --max-html-token-count 4000
 
-  python scripts/describe_website.py \
+  python scripts/get_website_prompt.py \
     --url https://nyt.com \
     --html-encoding minify_markdown \
     --max-html-token-count 4000
