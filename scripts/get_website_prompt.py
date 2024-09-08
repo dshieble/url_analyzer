@@ -1,12 +1,7 @@
 import argparse
-from datetime import datetime, timedelta
 import sys
 import os
 import asyncio
-from typing import List
-
-import jwt
-
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -17,6 +12,7 @@ from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPa
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
 from url_analyzer.classification.url_classification import get_phishing_classification_prompt_from_visited_url
 from url_analyzer.llm.utilities import get_token_count_from_prompt
+from url_analyzer.classification.domain_data import DomainData
 
 async def main(args):
   # playwright_driver = await PlaywrightDriver.construct(headless=False)
@@ -38,8 +34,11 @@ async def main(args):
     )
     visited_url.write_to_directory(directory=playwright_spider.directory)
 
+  domain_data = await DomainData.from_url(fqdn=visited_url.url)
+
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
+    domain_data=domain_data,
     max_html_token_count=int(args.max_html_token_count),
     html_encoding=args.html_encoding
   )

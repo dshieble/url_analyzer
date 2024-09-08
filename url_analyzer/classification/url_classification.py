@@ -106,7 +106,7 @@ def get_network_log_string_from_response_log(
 
 async def convert_visited_url_to_string(
   visited_url: VisitedUrl,
-  domain_data: Optional[DomainData] = None,
+  domain_data: DomainData,
   max_html_token_count: int = 4000,
   max_urls_on_page_string_token_count: int = 4000,
   max_network_log_string_token_count: int = 4000,
@@ -116,25 +116,23 @@ async def convert_visited_url_to_string(
   """
   A method to convert a VisitedUrl object to a string that can be used as a prompt for an LLM
   """
-  logging.info(f"Converting visited url to string: {visited_url.url}")
+  print(f"[convert_visited_url_to_string] Converting visited url to string: {visited_url.url}")
 
   # Domain Data String
-  if domain_data is not None:
-    logging.info(f"Generating a domain data description for {visited_url.url}")
-    domain_data_description_string = DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE.format(
-      domain_data_json_dump=domain_data.model_dump_json()
-    )
-  else:
-    logging.info(f"Skipping domain data description generation for {visited_url.url}")
-    domain_data_description_string = ""
+  if domain_data is None:
+    raise ValueError("Domain data must be provided to convert_visited_url_to_string")
+  
+  domain_data_description_string = DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE.format(
+    domain_data_json_dump=domain_data.model_dump_json()
+  )
 
   # Image description
   if generate_llm_screenshot_description:
-    logging.info(f"Generating an LLM image description of the url screenshot for {visited_url.url}")
+    print(f"[convert_visited_url_to_string] Generating an LLM image description of the url screenshot for {visited_url.url}")
     optional_image_description_string = await get_image_description_string_from_visited_url(visited_url=visited_url)
     image_description_string = optional_image_description_string if optional_image_description_string is not None else ""
   else:
-    logging.info(f"Skipping image description generation for {visited_url.url}")
+    print(f"[convert_visited_url_to_string] Skipping image description generation for {visited_url.url}")
     image_description_string = ""
 
   # HTML String
@@ -171,30 +169,30 @@ async def convert_visited_url_to_string(
 
 async def get_phishing_classification_prompt_from_visited_url(
   visited_url: VisitedUrl,
+  domain_data: DomainData,
   max_html_token_count: int = 4000,
-  html_encoding: str = HTMLEncoding.RAW,
-  domain_data: Optional[DomainData] = None
+  html_encoding: str = HTMLEncoding.RAW
 ) -> str:
   visited_url_string = await convert_visited_url_to_string(
     visited_url=visited_url,
+    domain_data=domain_data,
     max_html_token_count=max_html_token_count,
-    html_encoding=html_encoding,
-    domain_data=domain_data
+    html_encoding=html_encoding
   )
   return PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(visited_url_string=visited_url_string)
 
 async def get_raw_url_classification_llm_response_from_visited_url(
   visited_url: VisitedUrl,
+  domain_data: DomainData,
   max_html_token_count: int = 2000,
-  html_encoding: str = HTMLEncoding.RAW,
-  domain_data: Optional[DomainData] = None
+  html_encoding: str = HTMLEncoding.RAW
 ) -> LLMResponse:
 
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
+    domain_data=domain_data,
     max_html_token_count=max_html_token_count,
-    html_encoding=html_encoding,
-    domain_data=domain_data
+    html_encoding=html_encoding
   )
   llm_response = await get_response_from_prompt_one_shot(
     prompt=phishing_classification_prompt,
@@ -214,9 +212,9 @@ async def classify_visited_url(
 
   llm_response = await get_raw_url_classification_llm_response_from_visited_url(
     visited_url=visited_url,
+    domain_data=domain_data,
     max_html_token_count=max_html_token_count,
-    html_encoding=html_encoding,
-    domain_data=domain_data
+    html_encoding=html_encoding
   )
   return await RichUrlClassificationResponse.construct(
     visited_url=visited_url,
