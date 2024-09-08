@@ -45,7 +45,7 @@ async def spider_and_classify_url(
   playwright_spider = await PlaywrightSpider.construct(
     url_list=[url],
     included_fqdn_regex=(".*" if included_fqdn_regex is None else included_fqdn_regex),
-    capture_screenshot=screenshot_type,
+    screenshot_type=screenshot_type,
   )
   async with PlaywrightPageManagerContext(playwright_page_manager=(
     await PlaywrightPageManager.construct(headless=headless)
