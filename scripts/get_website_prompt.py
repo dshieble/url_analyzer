@@ -34,7 +34,7 @@ async def main(args):
     )
     visited_url.write_to_directory(directory=playwright_spider.directory)
 
-  domain_data = await DomainData.from_url(fqdn=visited_url.url)
+  domain_data = await DomainData.from_url(url=visited_url.url)
 
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,

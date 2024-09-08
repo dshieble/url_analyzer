@@ -208,7 +208,7 @@ async def classify_visited_url(
   html_encoding: str = HTMLEncoding.RAW
 ) -> RichUrlClassificationResponse:
   
-  domain_data = await DomainData.from_url(fqdn=visited_url.url)
+  domain_data = await DomainData.from_url(url=visited_url.url)
 
   llm_response = await get_raw_url_classification_llm_response_from_visited_url(
     visited_url=visited_url,

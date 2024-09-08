@@ -29,6 +29,7 @@ class DomainData(BaseModel):
   # The date the domain was created
   created: Optional[str]
 
+  @classmethod
   async def from_fqdn(cls, fqdn: str) -> "DomainData":
     domain_classification_response = DomainClassificationResponse.from_fqdn(fqdn=fqdn)
     domain_lookup_response = await DomainLookupResponse.from_fqdn(fqdn=fqdn)
@@ -59,7 +60,7 @@ class DomainData(BaseModel):
       created=domain_lookup_response.created
     )
 
-
+  @classmethod
   async def from_url(cls, url: str) -> "DomainData":
     return await cls.from_fqdn(fqdn=get_fqdn_from_url(url=url))
 
