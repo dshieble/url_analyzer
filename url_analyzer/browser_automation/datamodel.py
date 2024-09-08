@@ -223,10 +223,11 @@ class Listener:
     self.page.on("console", self.handle_console)
 
   async def handle_response(self, response: Request):
-    # Record the message on each dialog that is opened
+    # Record the message on each response that is processes
     response_record = await ResponseRecord.from_playwright_response(response)
     pydantic_validate(ResponseRecord, response_record)
     self.response_log.append(response_record)
+
 
   async def handle_dialog(self, dialog):
     # Record the message on each dialog that is opened
@@ -237,6 +238,9 @@ class Listener:
     # Record the error message on each dialog that is opened
     if console.type == "error":
       self.console_error_message_log.append(console.text)
+
+
+
 
   def remove_listener(self):
     self.page.remove_listener("response", self.handle_response)
@@ -317,7 +321,6 @@ class BrowserUrlVisit(BaseModel):
     BrowserUrlVisit.model_validate(browser_url_visit)
     return browser_url_visit
 
-  
 
   def truncate_response_log_text(self, max_text_length: int = 10000) -> "BrowserUrlVisit":
     """

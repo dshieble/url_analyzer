@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.html_understanding.html_understanding import process_html_for_llm
+from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string, process_html_for_llm
 
 class TestProcessHtmlForLLM(unittest.TestCase):
 
@@ -29,7 +29,7 @@ class TestProcessHtmlForLLM(unittest.TestCase):
     <html><body><p>Welcome to our website. Please enjoy browsing our content.</p></body></html>
     """
     result = process_html_for_llm(html_input)
-    self.assertEqual(result, {"emails": [], "links": [], "keywords": []})
+    self.assertEqual(result, json.dumps({"emails": [], "links": [], "keywords": []}))
   
   def test_suspicious_keywords_in_context(self):
     html_input = """
@@ -76,7 +76,25 @@ class TestProcessHtmlForLLM(unittest.TestCase):
   def test_empty_html(self):
     html_input = "<html><body></body></html>"
     result = process_html_for_llm(html_input)
-    self.assertEqual(result, {"emails": [], "links": [], "keywords": []})
+    self.assertEqual(result, json.dumps({"emails": [], "links": [], "keywords": []}))
 
+
+
+  def test_get_processed_html_string_1(self):
+    html_input = """
+    <html><body>
+    <p>Your account has been compromised, please secure it now by <a href="http://fakeurl.com/secure">clicking here</a>.</p>
+    <form action="http://fakeurl.com/submit"><input type="password"></form>
+    <p>Contact support at support@fakeemail.com for more information.</p>
+    <img src="http://fakeurl.com/warning.png">
+    <p>This is an important security update regarding your account.</p>
+    <p>Failure to act now could result in permanent loss of access to your account.</p>
+    <a href="http://anotherfakeurl.com/recover">Recover your account</a>.
+    </body></html>
+    """
+    result = json.dumps(get_processed_html_string(html_input, html_encoding=HTMLEncoding.TRAFILATURA))
+    print(result)
+    assert False
+  
 if __name__ == '__main__':
   unittest.main()

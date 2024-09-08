@@ -44,7 +44,6 @@ from url_analyzer.browser_automation.datamodel import BrowserUrlVisit, scroll_pa
 from url_analyzer.browser_automation.utilities import NetworkTracker
 
 
-
 async def remove_if_modified_since_header(route, request):
   # Clone the headers, excluding 'If-Modified-Since'
   headers = {k: v for k, v in request.headers.items() if k.lower() not in  ('if-modified-since', 'if-none-match')}
@@ -66,7 +65,7 @@ async def initialize_browser_context(
     
   # disable navigator.webdriver:true flag. This is lifted from https://github.com/kaliiiiiiiiii/undetected-playwright-python as a simple solution to avoid detection
   # also discussed in https://stackoverflow.com/questions/53039551/selenium-webdriver-modifying-navigator-webdriver-flag-to-prevent-selenium-detec/69533548#69533548
-  # args.append("--disable-blink-features=AutomationControlled")
+  args.append("--disable-blink-features=AutomationControlled")
   
   if proxy_url is not None:
     # We need to ignore https errors when we run playwright through a proxy
@@ -101,7 +100,9 @@ class PlaywrightPageManager:
       except Exception as e:
         print(f"WARNING: error in dialog.accept(): {e}")
     page.on("dialog", accept)
-    await stealth_async(page)
+
+    ## NOTE: For now we are not using stealth_async since this seems to cause some pages to fail to load (e.g. https://nyt.com). We are using the STEALTH_INIT_SCRIPT to accomplish this instead
+    # await stealth_async(page)
 
 
 

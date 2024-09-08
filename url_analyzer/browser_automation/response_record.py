@@ -73,7 +73,7 @@ async def _get_mystery_attribute_from_playwright_response(
     try:
       base = getattr(base, attribute_name)
     except Exception as e:
-      print(f"==========================\n\n\nERROR: error fetching attribute {attribute_name} from {base}: {e}\n\n\n==========================")
+      print(f"===========[_get_mystery_attribute_from_playwright_response called with {attribute_name_list}]===============\n\n\nERROR: error fetching attribute {attribute_name} from {base}: {e}\n\n\n==========================")
     if base is None:
       break
   extractor = base
@@ -98,7 +98,12 @@ async def _get_mystery_attribute_from_playwright_response(
       error = f"ERROR extracting {attribute_name}: {e}"
     else:
       # We need this to be pickleable in order to save and reload VisitedUrl objects
-      if not dill.pickles(potential_output):
+      try:
+        is_pickleable = dill.pickles(potential_output)
+      except Exception as e:
+        print(f"ERROR: Could not pickle attribute {attribute_name} with value {str(potential_output)}: {e}")
+        is_pickleable = False
+      if not is_pickleable:
         error = f"ERROR: Could not pickle attribute {attribute_name} with value {str(potential_output)}"
       else:
         output = potential_output

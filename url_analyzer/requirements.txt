@@ -40,3 +40,4 @@ pygtrie
 fastapi[standard]
 pyjwt
 uvicorn
+trafilatura

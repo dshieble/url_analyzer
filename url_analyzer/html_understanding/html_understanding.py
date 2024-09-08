@@ -5,7 +5,7 @@ The goal of this file is to store helper methods for representing page content t
 import asyncio
 import os
 import sys
-
+import trafilatura
 from typing import Any, Callable, Dict, List, Optional
 from dataclasses import dataclass
 from bs4 import BeautifulSoup
@@ -348,3 +348,28 @@ def process_html_for_llm(
     "emails": cutoff_string_at_token_count(str(emails_context), max_token_count=max_attribute_token_count),
     "keywords": cutoff_string_at_token_count(str(keywords_context), max_token_count=max_attribute_token_count),
   }
+
+
+class HTMLEncoding:
+  RAW: str = "raw"
+  JSON: str = "json"
+  TRAFILATURA: str = "trafilatura"
+
+def get_processed_html_string(
+  html: str,
+  html_encoding: str = HTMLEncoding.RAW,
+  max_attribute_token_count: int = 1000
+) -> str:
+  if html_encoding == HTMLEncoding.JSON:
+    stripped_html_string = remove_html_comments(html)
+    processed_html_string = json.dumps(
+      process_html_for_llm(html_string=stripped_html_string, max_attribute_token_count=max_attribute_token_count)
+    )
+  elif html_encoding == HTMLEncoding.TRAFILATURA:
+    processed_html_string = trafilatura.extract(html)
+  elif html_encoding == HTMLEncoding.RAW:
+    stripped_html_string = remove_html_comments(html=html)
+    processed_html_string = stripped_html_string
+  else:
+    raise ValueError(f"Invalid html_encoding: {html_encoding}")
+  return processed_html_string

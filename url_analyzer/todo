@@ -1,8 +1,7 @@
-- figure out how to capture popups etc to prevent screenshots of the wrong page
 - switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
 - add IP and domain intelligence to the response
-
+- figure out a better screenshot strategy to cover multi-page screenshots (e.g. screenshot the first page cleanly and then scroll to get other screenshots)
 
 - switch to a SQL data storage scheme
 - record a summary of the image of the home page
@@ -13,3 +12,10 @@
   - JWT is saved to a file
   - API keys are created from JWT when new users are created
   - Per-API key quota is tracked in a database
+
+
+
+
+
+
+xxx- figure out how to capture popups etc to prevent screenshots of the wrong page

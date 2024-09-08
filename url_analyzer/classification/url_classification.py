@@ -5,6 +5,7 @@ import base64
 import json
 import logging
 from typing import Optional
+import trafilatura
 
 from pydantic import BaseModel
 from url_analyzer.browser_automation.playwright_spider import VisitedUrl
@@ -15,7 +16,7 @@ from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
 from url_analyzer.llm.formatting_utils import load_function_call
-from url_analyzer.html_understanding.html_understanding import process_html_for_llm
+from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string, process_html_for_llm
 from url_analyzer.utilities.utilities import Maybe
 
 class UrlClassification(BaseModel):
@@ -99,22 +100,22 @@ def get_network_log_string_from_response_log(
     string=raw_processed_response_record_list_string,
     max_token_count=total_token_count_max
   )
-    
+
+
+
 def convert_visited_url_to_string(
   visited_url: VisitedUrl,
   max_html_token_count: int = 2000,
   max_attribute_token_count: int = 1000,
-  jsonify_html: bool = True,
+  html_encoding: str = HTMLEncoding.RAW
 ) -> str:
-  stripped_html_string = remove_html_comments(html=visited_url.open_url_browser_url_visit.ending_html)
-  if jsonify_html:
-    raw_html_summary = json.dumps(
-      process_html_for_llm(html_string=stripped_html_string, max_attribute_token_count=max_attribute_token_count)
-    )
-  else:
-    raw_html_summary = stripped_html_string
+  processed_html_string = get_processed_html_string(
+    html=visited_url.open_url_browser_url_visit.ending_html,
+    html_encoding=html_encoding,
+    max_attribute_token_count=max_attribute_token_count
+  )
   trimmed_ending_html = cutoff_string_at_token_count(
-    string=raw_html_summary, max_token_count=max_html_token_count)
+    string=processed_html_string, max_token_count=max_html_token_count)
 
   network_log_string = get_network_log_string_from_response_log(response_log=visited_url.open_url_browser_url_visit.response_log)
   
