@@ -34,15 +34,7 @@ class ScreenshotType:
   FULL_PAGE_SCREENSHOT = "full_page"
   NO_SCREENSHOT = "no_screenshot"
 
-  @classmethod
-  def get_image_root_path_from_screenshot_type(cls, screenshot_type: str) -> Optional[str]:
-    if screenshot_type == cls.NO_SCREENSHOT:
-      image_root_path = None
-    elif screenshot_type in [cls.VIEWPORT_SCREENSHOT, cls.FULL_PAGE_SCREENSHOT]:
-      image_root_path = os.path.join(BASE_LOG_DIRECTORY, "images")
-    else:
-      raise ValueError(f"Invalid screenshot type {screenshot_type}")
-    return image_root_path
+
 
 class VisitedUrlForm(BaseModel):
   field_name_to_value: Dict[str, str]
@@ -185,7 +177,9 @@ class PlaywrightSpider:
 
     self.enqueued_base_url_to_parameterized_url_set = defaultdict(set)
 
-    self.image_root_path = ScreenshotType.get_image_root_path_from_screenshot_type(screenshot_type=self.screenshot_type)
+    self.image_root_path = self.get_image_root_path_from_screenshot_type(
+      screenshot_type=self.screenshot_type
+    )
 
     self.visited_urls = {}
     self.url_queue = PrefixOptimizedSingleVisitQueue.construct(name="url_queue")
@@ -222,7 +216,15 @@ class PlaywrightSpider:
   def url_is_asset(self, url: str) -> bool:
     return re.match(URL_ASSET_REGEX, url)
 
-
+  def get_image_root_path_from_screenshot_type(self, directory: str, screenshot_type: str) -> Optional[str]:
+    if screenshot_type == ScreenshotType.NO_SCREENSHOT:
+      image_root_path = None
+    elif screenshot_type in [ScreenshotType.VIEWPORT_SCREENSHOT, ScreenshotType.FULL_PAGE_SCREENSHOT]:
+      image_root_path = os.path.join(directory, "images")
+    else:
+      raise ValueError(f"Invalid screenshot type {screenshot_type}")
+    return image_root_path
+  
   async def run(
     self,
     url_list: List[str],
