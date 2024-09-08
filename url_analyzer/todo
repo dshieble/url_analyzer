@@ -1,4 +1,4 @@
-
+- figure out how to capture popups etc to prevent screenshots of the wrong page
 - switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 - switch to spidering at depth 1 and derive the response chain for every url/form on the starting page (maybe just forms?)
 - add IP and domain intelligence to the response

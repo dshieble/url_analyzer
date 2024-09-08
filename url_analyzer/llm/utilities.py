@@ -12,7 +12,7 @@ DEFAULT_ENCODER = tiktoken.encoding_for_model('gpt-3.5-turbo-0125')
 
 
 def get_token_count_from_prompt(prompt: str) -> int:
-  return len(DEFAULT_ENCODER.encode(prompt))  
+  return len(DEFAULT_ENCODER.encode(str(prompt)))
 
 
 def cutoff_string_at_token_count(string: str, max_token_count: Optional[int]) -> str:
@@ -24,7 +24,7 @@ def cutoff_string_at_token_count(string: str, max_token_count: Optional[int]) ->
     cutoff_string = string
   else:
     cutoff_string = DEFAULT_ENCODER.decode(encoded[:max_token_count]) + "..."
-  return cutoff_string
+  return str(cutoff_string)
 
 def get_diff_string_from_html_strings(starting_html: str, ending_html: str, buffer: int = 0, max_token_count_per_section: Optional[int] = None) -> str:
   """"

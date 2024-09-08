@@ -151,6 +151,8 @@ async def get_response_from_prompt_one_shot(
   system_prompt: str = DEFAULT_SYSTEM_PROMPT,
   **kwargs
 ) -> LLMResponse:
+  if not isinstance(prompt, str):
+    raise ValueError(f"Prompt must be a string, not {type(prompt)}")
   try:
     message_manager = MessageManager(
       messages=[

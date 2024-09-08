@@ -240,8 +240,8 @@ class PlaywrightPageManager:
     """
 
     # https://stackoverflow.com/questions/68266451/navigating-to-url-waiting-until-load-python-playwright-issue
-    # async def take_action(page=self.page, url=url): await page.goto(url)
-    async def take_action(page=self.page, url=url): await page.goto(url, wait_until="domcontentloaded")
+    async def take_action(page=self.page, url=url): await page.goto(url)
+    # async def take_action(page=self.page, url=url): await page.goto(url, wait_until="domcontentloaded")
     browser_url_visit = await BrowserUrlVisit.from_action(page=self.page, take_action=take_action)
     BrowserUrlVisit.model_validate(browser_url_visit)
     return browser_url_visit

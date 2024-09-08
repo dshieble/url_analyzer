@@ -139,7 +139,7 @@ async def get_raw_url_classification_llm_response_from_visited_url(
   max_html_token_count: int = 2000,
 ) -> LLMResponse:
 
-  phishing_classification_prompt = get_phishing_classification_prompt_from_visited_url(
+  phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
   )
