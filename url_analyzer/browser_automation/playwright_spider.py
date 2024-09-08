@@ -178,6 +178,7 @@ class PlaywrightSpider:
     self.enqueued_base_url_to_parameterized_url_set = defaultdict(set)
 
     self.image_root_path = self.get_image_root_path_from_screenshot_type(
+      directory=self.directory,
       screenshot_type=self.screenshot_type
     )
 
