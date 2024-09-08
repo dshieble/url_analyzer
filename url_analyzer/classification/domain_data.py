@@ -14,6 +14,9 @@ class DomainData(BaseModel):
   # True if the domain is a webhosting domain, such as pages.dev or github.io
   is_webhosting_domain: bool
 
+  # A string that represents the popularity of the domain
+  domain_rank_magnitude_string: str
+
   # The name of the registrant of the domain. This is often a placeholder
   registrant_name: Optional[str]
 
@@ -39,6 +42,7 @@ class DomainData(BaseModel):
       domain_classification_response.is_webhosting_fqdn
       or domain_classification_response.has_webhosting_domain_parent
     )
+    assert isinstance(is_webhosting_domain, bool)
 
     # Derived attribute that corresponds to how popular the domain is
     domain_rank_magnitude = None
@@ -50,9 +54,12 @@ class DomainData(BaseModel):
     ):
       domain_rank_magnitude = domain_classification_response.best_parent_domain_rank_magnitude
 
-    
+    domain_rank_magnitude_string = f"Within the top {domain_rank_magnitude} domains" if domain_rank_magnitude is not None else "Not in the top 1M domains"
+
     return cls(
+      fqdn=fqdn,
       is_webhosting_domain=is_webhosting_domain,
+      domain_rank_magnitude_string=domain_rank_magnitude_string,
       registrant_name=domain_lookup_response.registrant_name,
       registrar_name=domain_lookup_response.registrar_name,
       expires=domain_lookup_response.expires,
