@@ -23,7 +23,7 @@ def cutoff_string_at_token_count(string: str, max_token_count: Optional[int]) ->
   if max_token_count is None or len(encoded) <= max_token_count:
     cutoff_string = string
   else:
-    cutoff_string = DEFAULT_ENCODER.decode(encoded[:max_token_count]) + "..."
+    cutoff_string = DEFAULT_ENCODER.decode(encoded[:max_token_count]) + f"...[cutoff {len(encoded) - max_token_count} out of {len(encoded)} total tokens]"
   return str(cutoff_string)
 
 def get_diff_string_from_html_strings(starting_html: str, ending_html: str, buffer: int = 0, max_token_count_per_section: Optional[int] = None) -> str:

@@ -36,13 +36,12 @@ from unidecode import unidecode
 
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager
 from url_analyzer.browser_automation.utilities import get_outer_html_list_from_locator_list, get_url_screenshot_response_from_loaded_page, remove_hidden_elements, remove_html_comments, remove_html_metadata
-from url_analyzer.browser_automation.datamodel import BrowserUrlVisit, UrlScreenshotResponse, scroll_page_and_wait
-from url_analyzer.browser_automation.playwright_driver import ActionResponse, PlaywrightDriver
+from url_analyzer.browser_automation.datamodel import UrlScreenshotResponse, scroll_page_and_wait
+from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
 
-from url_analyzer.utilities.utilities import Maybe, json_dumps_safe, safe_to_int
-from url_analyzer.utilities.utilities import Maybe
-from url_analyzer.llm.formatting_utils import find_json_string
-from url_analyzer.llm.utilities import cutoff_string_at_token_count, get_diff_string_from_html_strings
+from url_analyzer.html_understanding.html_minify import MARKDOWN_CONVERTER
+from url_analyzer.utilities.utilities import Maybe, json_dumps_safe
+from url_analyzer.llm.utilities import cutoff_string_at_token_count
 
 
 SUSPICIOUS_KEYWORDS = ['password', 'login', 'verify', 'account', 'bank', 'urgent', 'security', 'update']
@@ -354,6 +353,7 @@ class HTMLEncoding:
   RAW: str = "raw"
   JSON: str = "json"
   TRAFILATURA: str = "trafilatura"
+  MINIFY_MARKDOWN: str = "minify_markdown"
 
 def get_processed_html_string(
   html: str,
@@ -365,11 +365,12 @@ def get_processed_html_string(
     processed_html_string = json.dumps(
       process_html_for_llm(html_string=stripped_html_string, max_attribute_token_count=max_attribute_token_count)
     )
+  elif html_encoding == HTMLEncoding.RAW:
+    processed_html_string = remove_html_comments(html=html)
   elif html_encoding == HTMLEncoding.TRAFILATURA:
     processed_html_string = trafilatura.extract(html)
-  elif html_encoding == HTMLEncoding.RAW:
-    stripped_html_string = remove_html_comments(html=html)
-    processed_html_string = stripped_html_string
+  elif html_encoding == HTMLEncoding.MINIFY_MARKDOWN:
+    processed_html_string = MARKDOWN_CONVERTER.clean(html)
   else:
     raise ValueError(f"Invalid html_encoding: {html_encoding}")
   return processed_html_string

@@ -41,3 +41,4 @@ fastapi[standard]
 pyjwt
 uvicorn
 trafilatura
+markdownify

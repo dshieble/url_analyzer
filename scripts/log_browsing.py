@@ -30,14 +30,14 @@ async def main(args):
   start = time.time()
   while not playwright_page_manager.page.is_closed():
 
-    network_log = await playwright_page_manager.network_tracker.get_network_log()
-    new_network_log_json = network_log.model_dump_json(indent=2)
-    if hash(network_log_json) != hash(new_network_log_json):
-      print(f"Logging network activity to {log_file}. Time elapsed: {time.time() - start}")
-      network_log.write_to_file(filepath=log_file)
-      network_log_json = new_network_log_json
-    else:
-      print(f"No new network activity. Time elapsed: {time.time() - start}")
+    # network_log = await playwright_page_manager.network_tracker.get_network_log()
+    # new_network_log_json = network_log.model_dump_json(indent=2)
+    # if hash(network_log_json) != hash(new_network_log_json):
+    #   print(f"Logging network activity to {log_file}. Time elapsed: {time.time() - start}")
+    #   network_log.write_to_file(filepath=log_file)
+    #   network_log_json = new_network_log_json
+    # else:
+    #   print(f"No new network activity. Time elapsed: {time.time() - start}")
     await asyncio.sleep(2)
   print(f"Closing page. All logs written to {log_file}")
 

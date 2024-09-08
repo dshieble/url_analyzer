@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import sys
 import os
 import asyncio
+from typing import List
 
 import jwt
 
@@ -11,13 +12,11 @@ import jwt
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
-from url_analyzer.html_understanding.html_understanding import LLMPageContent
+from url_analyzer.html_understanding.html_understanding import HTMLEncoding, LLMPageContent
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
 from url_analyzer.classification.url_classification import get_phishing_classification_prompt_from_visited_url
 from url_analyzer.llm.utilities import get_token_count_from_prompt
-
-
 
 async def main(args):
   # playwright_driver = await PlaywrightDriver.construct(headless=False)
@@ -42,6 +41,7 @@ async def main(args):
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
     max_html_token_count=2000,
+    html_encoding=args.html_encoding
   )
   print(phishing_classification_prompt)
   print("token count", get_token_count_from_prompt(phishing_classification_prompt))
@@ -50,12 +50,15 @@ if __name__ == "__main__":
   """
   
   python scripts/describe_website.py \
-    --url https://nyt.com
+    --url https://nyt.com \
+    --html-encoding minify_markdown
   
   """
 
   parser = argparse.ArgumentParser()
   parser.add_argument("--url", type=str, required=True)
+  parser.add_argument("--html-encoding", type=str, default="raw")
+
 
   args = parser.parse_args()
 

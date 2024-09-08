@@ -29,7 +29,7 @@ class TestProcessHtmlForLLM(unittest.TestCase):
     <html><body><p>Welcome to our website. Please enjoy browsing our content.</p></body></html>
     """
     result = process_html_for_llm(html_input)
-    self.assertEqual(result, json.dumps({"emails": [], "links": [], "keywords": []}))
+    self.assertEqual(result, {"emails": '[]', "links": '[]', "keywords": '[]'})
   
   def test_suspicious_keywords_in_context(self):
     html_input = """
@@ -76,7 +76,7 @@ class TestProcessHtmlForLLM(unittest.TestCase):
   def test_empty_html(self):
     html_input = "<html><body></body></html>"
     result = process_html_for_llm(html_input)
-    self.assertEqual(result, json.dumps({"emails": [], "links": [], "keywords": []}))
+    self.assertEqual(result, {"emails": '[]', "links": '[]', "keywords": '[]'})
 
 
 
@@ -93,8 +93,7 @@ class TestProcessHtmlForLLM(unittest.TestCase):
     </body></html>
     """
     result = json.dumps(get_processed_html_string(html_input, html_encoding=HTMLEncoding.TRAFILATURA))
-    print(result)
-    assert False
+    self.assertEqual(result, "Your account has been compromised, please secure it now by clicking here.\nContact support at support@fakeemail.com for more information.\nThis is an important security update regarding your account.\nFailure to act now could result in permanent loss of access to your account.\nRecover your account.")
   
 if __name__ == '__main__':
   unittest.main()

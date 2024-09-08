@@ -21,9 +21,8 @@ DEFAULT_REQUEST_TO_CHOOSE_FUNCTION_NAME_PROMPT = "Now please select the name of 
 DEFAULT_REQUEST_TO_GENERATE_FUNCTION_PROMPT = "Okay, please call one of the provided functions. Your answer must be the function you are calling in json format and nothing else."
 
 
-
-DEFAULT_MODEL_NAME = "gpt-3.5-turbo-0125"
-GPT4_MODEL_NAME = "gpt-4-0125-preview"
+DEFAULT_MODEL_NAME = "gpt-4o-mini"
+BEST_MODEL_NAME = "gpt-4o"
 GPT4_VISION_MODEL_NAME = "gpt-4-vision-preview"
 
 @dataclass

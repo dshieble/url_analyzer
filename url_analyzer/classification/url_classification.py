@@ -131,18 +131,24 @@ def convert_visited_url_to_string(
 async def get_phishing_classification_prompt_from_visited_url(
   visited_url: VisitedUrl,
   max_html_token_count: int = 4000,
+  html_encoding: str = HTMLEncoding.RAW
 ) -> str:
-  visited_url_string = convert_visited_url_to_string(visited_url=visited_url, max_html_token_count=max_html_token_count)
+  visited_url_string = convert_visited_url_to_string(
+    visited_url=visited_url,
+    max_html_token_count=max_html_token_count,
+    html_encoding=html_encoding)
   return PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(visited_url_string=visited_url_string)
 
 async def get_raw_url_classification_llm_response_from_visited_url(
   visited_url: VisitedUrl,
   max_html_token_count: int = 2000,
+  html_encoding: str = HTMLEncoding.RAW
 ) -> LLMResponse:
 
   phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
+    html_encoding=html_encoding
   )
   llm_response = await get_response_from_prompt_one_shot(
     prompt=phishing_classification_prompt,
@@ -155,10 +161,12 @@ async def get_raw_url_classification_llm_response_from_visited_url(
 async def classify_visited_url(
   visited_url: VisitedUrl,
   max_html_token_count: int = 2000,
+  html_encoding: str = HTMLEncoding.RAW
 ) -> UrlClassificationWithLLMResponse:
   llm_response = await get_raw_url_classification_llm_response_from_visited_url(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
+    html_encoding=html_encoding
   )
   return await UrlClassificationWithLLMResponse.from_visited_url_and_llm_response(visited_url=visited_url, llm_response=llm_response)
 
