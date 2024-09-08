@@ -23,6 +23,19 @@ from url_analyzer.utilities.utilities import get_rdn_from_url, call_with_rate_li
 
 
 
+class DomainLookupField:
+  # NOTE: These need to all be fields in DomainLookupResponse
+  REGISTRANT_NAME = "registrant_name"
+  REGISTRAR_NAME = "registrar_name"
+  STATUS = "status"
+  NAMESERVERS = "nameservers"
+  EXPIRES = "expires"
+  UPDATED = "updated"
+  CREATED = "created"
+
+CRITICAL_DOMAIN_LOOKUP_FIELDS = [DomainLookupField.CREATED, DomainLookupField.REGISTRAR_NAME]
+
+
 def _parse_whois_date(date_or_list: Union[str, datetime, List[Union[str, datetime]]]) -> str:
   """
   The input to this 
@@ -68,18 +81,6 @@ class AsyncCache:
         self.request_set.remove(key)
         assert key not in self.request_set
         return self.cache[key]
-
-
-class DomainLookupField:
-  # NOTE: These need to all be fields in DomainLookupResponse
-  REGISTRANT_NAME = "registrant_name"
-  REGISTRAR_NAME = "registrar_name"
-  STATUS = "status"
-  NAMESERVERS = "nameservers"
-  EXPIRES = "expires"
-  UPDATED = "updated"
-  CREATED = "created"
-
 
 class DomainLookupTool:
 
@@ -234,7 +235,6 @@ class DomainLookupTool:
 
 
 
-@dataclass
 class DomainLookupResponse(BaseModel):
   # NOTE: These need to be a superset of the fields on DomainLookupField
   fqdn: str
@@ -246,7 +246,6 @@ class DomainLookupResponse(BaseModel):
   updated: Optional[str]
   created: Optional[str]
 
-  CRITICAL_DOMAIN_LOOKUP_FIELDS = [DomainLookupField.CREATED, DomainLookupField.REGISTRAR_NAME]
 
   def display(self):
     print(f"""
@@ -281,16 +280,26 @@ class DomainLookupResponse(BaseModel):
     )
 
     # Then try async whois
-    if any([whois_rdap_field_to_value.get(response) is None for response in cls.CRITICAL_DOMAIN_LOOKUP_FIELDS]):
+    if any([whois_rdap_field_to_value.get(response) is None for response in CRITICAL_DOMAIN_LOOKUP_FIELDS]):
       async_whois_response = await domain_lookup_tool.get_async_whois_response_from_registered_domain(registered_domain_name=registered_domain_name)
       for field_name, field_value in async_whois_response.items():
         if whois_rdap_field_to_value.get(field_name) is None:
           whois_rdap_field_to_value[field_name] = field_value
 
     # Final fallback is sync whois (slow)
-    if any([whois_rdap_field_to_value.get(response) is None for response in cls.CRITICAL_DOMAIN_LOOKUP_FIELDS]):
+    if any([whois_rdap_field_to_value.get(response) is None for response in CRITICAL_DOMAIN_LOOKUP_FIELDS]):
       sync_whois_response = await domain_lookup_tool.get_sync_whois_response_from_registered_domain(registered_domain_name=registered_domain_name)
       for field_name, field_value in sync_whois_response.items():
         if whois_rdap_field_to_value.get(field_name) is None:
           whois_rdap_field_to_value[field_name] = field_value
-    return cls(fqdn=fqdn, **whois_rdap_field_to_value)
+
+    return cls(
+      fqdn=fqdn,
+      registrant_name=whois_rdap_field_to_value.get("registrant_name"),
+      registrar_name=whois_rdap_field_to_value.get("registrar_name"),
+      status=whois_rdap_field_to_value.get("status"),
+      nameservers=whois_rdap_field_to_value.get("nameservers"),
+      expires=whois_rdap_field_to_value.get("expires"),
+      updated=whois_rdap_field_to_value.get("updated"),
+      created=whois_rdap_field_to_value.get("created")
+    )
