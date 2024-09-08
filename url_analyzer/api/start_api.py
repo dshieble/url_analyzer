@@ -11,10 +11,10 @@ import jwt
 
 from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
 from url_analyzer.classification.classification import spider_and_classify_url, validate_classification_inputs
-from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
+from url_analyzer.classification.url_classification import RichUrlClassificationResponse
 
-class MaybeUrlClassificationWithLLMResponse(BaseModel):
-  data: Optional[UrlClassificationWithLLMResponse]
+class MaybeRichUrlClassificationResponse(BaseModel):
+  data: Optional[RichUrlClassificationResponse]
   error: str
 
 class HealthCheck(BaseModel):
@@ -68,7 +68,7 @@ def get_health() -> HealthCheck:
   return HealthCheck(status="OK")
 
 @app.post("/classify")
-async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> UrlClassificationWithLLMResponse:
+async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> RichUrlClassificationResponse:
   print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)} JWT_SECRET_KEY: {JWT_SECRET_KEY}")
 
   error = validate_classification_inputs(url=url)

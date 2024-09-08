@@ -18,11 +18,11 @@ async def main(args):
 
   visited_url = load_visited_url_list_from_path(path=args.visited_url_json_path)[0]
 
-  url_classification_with_llm_response = await classify_visited_url(
+  rich_url_classification_response = await classify_visited_url(
     visited_url=visited_url,
     max_html_token_count=2000,
   )
-  print(url_classification_with_llm_response.url_classification.display())
+  print(rich_url_classification_response.url_classification.display())
 
 
 if __name__ == "__main__":

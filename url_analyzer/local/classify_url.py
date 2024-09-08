@@ -17,13 +17,13 @@ from url_analyzer.classification.classification import spider_and_classify_url
 
 async def main(args):
 
-  url_classification_with_llm_response = await spider_and_classify_url(
+  rich_url_classification_response = await spider_and_classify_url(
     url=args.url,
     headless=not args.not_headless,
     max_html_token_count=2000,
   )
 
-  print(url_classification_with_llm_response.url_classification.display())
+  print(rich_url_classification_response.url_classification.display())
 
 
 if __name__ == "__main__":

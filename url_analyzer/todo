@@ -1,4 +1,7 @@
-- add IP and domain intelligence to the response
+- add IP and domain intelligence to the prompt, http response, and page display
+  - whois
+  - domain rank
+  - domain is webhosting
 
 - try switching to Gemini Flash as a simple free option https://ai.google.dev/pricing
 

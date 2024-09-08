@@ -26,6 +26,13 @@ CLASSIFICATION_FUNCTION = {
     }
   }
 }
+
+DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE = """
+A basic analysis of the url FQDN returned:
+```
+{domain_data_json_dump}
+```
+"""
   
 IMAGE_DESCRIPTION_STRING_TEMPLATE = """
 An LLM-written description of a screenshot of the page is:
@@ -36,6 +43,8 @@ An LLM-written description of a screenshot of the page is:
 
 VISITED_URL_PROMPT_STRING_TEMPLATE = """
 The url of the page is: {url}
+
+{domain_data_description_string}
 
 {image_description_string}
 

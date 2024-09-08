@@ -7,7 +7,7 @@ from typing import Optional
 from urllib.parse import urlparse
 
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
-from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse, classify_visited_url
+from url_analyzer.classification.url_classification import RichUrlClassificationResponse, classify_visited_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
 import dns.resolver
 
@@ -40,7 +40,7 @@ async def spider_and_classify_url(
   included_fqdn_regex: Optional[str] = None,
   max_html_token_count: int = 2000,
   screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
-) -> UrlClassificationWithLLMResponse:
+) -> RichUrlClassificationResponse:
   
   playwright_spider = await PlaywrightSpider.construct(
     url_list=[url],
@@ -56,9 +56,9 @@ async def spider_and_classify_url(
     )
     visited_url.write_to_directory(directory=playwright_spider.directory)
 
-  url_classification_with_llm_response = await classify_visited_url(
+  rich_url_classification_response = await classify_visited_url(
     visited_url=visited_url,
     max_html_token_count=max_html_token_count,
   )
-  return url_classification_with_llm_response
+  return rich_url_classification_response
 

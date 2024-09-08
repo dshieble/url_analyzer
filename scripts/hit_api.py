@@ -9,7 +9,7 @@ import requests
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.classification.url_classification import UrlClassificationWithLLMResponse
+from url_analyzer.classification.url_classification import RichUrlClassificationResponse
 
 
 LOCAL_URL = "http://0.0.0.0:8000"
@@ -45,8 +45,8 @@ def classify_url_with_requests(url: str, api_key: str):
 
   response.raise_for_status()
   data = response.json()
-  url_classification_with_llm_response = UrlClassificationWithLLMResponse(**data)
-  print(url_classification_with_llm_response.url_classification.display())
+  rich_url_classification_response = RichUrlClassificationResponse(**data)
+  print(rich_url_classification_response.url_classification.display())
 
 if __name__ == "__main__":
   
