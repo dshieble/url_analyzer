@@ -1,9 +1,6 @@
 # Prioritized TODO
 
-
-- increase speed of the logic to fetch the HTML+Image by refactoring the search logic to just grab the page rather than run a full spider
-  - potentially surface both options in the API
-
+- run tests with a bunch of example phishing pages from urlscan
 - switch the deployed vercel page to be zerophishing.com
 
 - switch to a SQL data storage scheme to enable rate limiting
@@ -19,7 +16,7 @@
 # Security Requirements
 - switch AWS authentication to IAM
 - move JWT secret key storage to secrets manager
-
+- move lightsail DNS to proxy through zero-phishing
 
 
 # Performance Backlog
@@ -28,7 +25,7 @@
   - impersonated brands
 - try switching to Gemini Flash as a simple free option https://ai.google.dev/pricing
 - integrate with webarena schema, especially viewport visible HTML https://github.com/web-arena-x/webarena/blob/1469b7c9d8eaec3177855b3131569751f43a40d6/browser_env/processors.py#L174
-
+- modify the API to enable spidering as well
 
 
 xxx- figure out how to capture popups etc to prevent screenshots of the wrong page
@@ -36,3 +33,4 @@ xx- switch from a full html encoding to just grabbing the relevant parts of the 
 xx- pipe a description of the image to the LLM classification logic
 xx- add IP and domain intelligence to the prompt, http response, and page display
 xx- improve user display to show a cleaner organized output
+xx- increase speed of the logic to fetch the HTML+Image by refactoring the search logic to just grab the page rather than run a full spider

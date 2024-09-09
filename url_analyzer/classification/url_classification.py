@@ -20,8 +20,8 @@ class PageData(BaseModel):
   base64_encoded_image: Optional[bytes] = None
 
   @classmethod
-  async def from_url_to_classify(cls, url_to_classift: UrlToClassify) -> "PageData":
-    screenshot_bytes = await url_to_classift.url_screenshot_response.get_screenshot_bytes()
+  async def from_url_to_classify(cls, url_to_classify: UrlToClassify) -> "PageData":
+    screenshot_bytes = await url_to_classify.url_screenshot_response.get_screenshot_bytes()
     base64_encoded_image = base64.b64encode(screenshot_bytes).decode("utf-8")
     return cls(
       base64_encoded_image=base64_encoded_image
