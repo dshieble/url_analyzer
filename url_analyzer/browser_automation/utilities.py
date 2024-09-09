@@ -30,6 +30,12 @@ from url_analyzer.browser_automation.datamodel import NetworkLog, PageLoadRespon
 from url_analyzer.browser_automation.response_record import get_response_log
 
 
+class ScreenshotType:
+  VIEWPORT_SCREENSHOT = "viewport"
+  FULL_PAGE_SCREENSHOT = "full_page"
+  NO_SCREENSHOT = "no_screenshot"
+
+
 GET_OUTER_HTML_JAVASCRIPT_FN = """
   async function getOuterHTML(element) {
     return element.outerHTML;
@@ -99,11 +105,19 @@ async def get_url_screenshot_response_from_loaded_page(
   scroll_timeout: int = 500,
   timestamp: Optional[int] = None,
   s3_client: Optional[AsyncS3Client] = None,
-  take_full_page_screenshot: bool = False
+  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
 ) -> UrlScreenshotResponse:
   """
   Take a screenshot from a page that is assumed to have already been loaded and therefore does not need to be reloaded. The screenshot will be written to s3.
   """
+
+  if screenshot_type == ScreenshotType.VIEWPORT_SCREENSHOT:
+    take_full_page_screenshot = False
+  elif screenshot_type == ScreenshotType.FULL_PAGE_SCREENSHOT:
+    take_full_page_screenshot = True
+  else:
+    raise ValueError(f"Invalid screenshot_type {screenshot_type}")
+
   page_load_response = PageLoadResponse(page_loaded_successfully=True) if page_load_response is None else page_load_response
   timestamp = int(time.time()) if timestamp is None else timestamp
   s3_client = AsyncS3Client() if s3_client is None else s3_client
@@ -116,7 +130,9 @@ async def get_url_screenshot_response_from_loaded_page(
       url=page.url, timestamp=timestamp, page_load_response=page_load_response, navigation_error=str(e))
   else:
     try:
-      html, screenshot_bytes = await get_html_and_screenshot(page=page, full_page=take_full_page_screenshot)
+      html, screenshot_bytes = await get_html_and_screenshot(
+        page=page, full_page=take_full_page_screenshot
+      )
     except Exception as e:
       url_screenshot_response = UrlScreenshotResponse(
         url=page.url, timestamp=timestamp, page_load_response=page_load_response, content_error=str(e))
@@ -136,7 +152,7 @@ async def get_url_screenshot_response(
   url: Optional[str] = None,
   s3_client: Optional[AsyncS3Client] = None,
   scroll_timeout: int = 500,
-  take_full_page_screenshot: bool = False
+  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT,
 ) -> UrlScreenshotResponse:
   url = page.url if url is None else url
   s3_client = AsyncS3Client() if s3_client is None else s3_client
@@ -157,7 +173,7 @@ async def get_url_screenshot_response(
       page=page,
       scroll_timeout=scroll_timeout,
       timestamp=timestamp,
-      take_full_page_screenshot=take_full_page_screenshot
+      screenshot_type=screenshot_type
     )
     
               
@@ -494,6 +510,8 @@ async def get_image_links_from_page(page: "Page") -> List[str]:
         absolute_src = urljoin(page.url, src)
         image_links.append(absolute_src)
   return image_links
+
+
 
 
 class NetworkTracker:

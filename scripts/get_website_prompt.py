@@ -4,15 +4,17 @@ import os
 import asyncio
 
 
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
 from url_analyzer.html_understanding.html_understanding import HTMLEncoding, LLMPageContent
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
+from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
 from url_analyzer.classification.url_classification import get_phishing_classification_prompt_from_visited_url
 from url_analyzer.llm.utilities import get_token_count_from_prompt
 from url_analyzer.classification.domain_data import DomainData
+from url_analyzer.browser_automation.utilities import ScreenshotType
 
 async def main(args):
   # playwright_driver = await PlaywrightDriver.construct(headless=False)

@@ -29,10 +29,6 @@ MAX_BODY_TEXT_LENGTH = 10000
 DEFAULT_PLAYWRIGHT_SPIDER_DIRECTORY_ROOT_PATH = os.path.join( os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), "outputs/playwright_scanner_outputs")
 SPIDER_DIRECTORY_NAME = "spider"
 
-class ScreenshotType:
-  VIEWPORT_SCREENSHOT = "viewport"
-  FULL_PAGE_SCREENSHOT = "full_page"
-  NO_SCREENSHOT = "no_screenshot"
 
 
 
@@ -358,17 +354,10 @@ async def get_visited_url_from_browser_url_visit(
     if verbose:
       logger.log(f"Taking screenshot of url {url}...")
 
-    if screenshot_type == ScreenshotType.VIEWPORT_SCREENSHOT:
-      take_full_page_screenshot = False
-    elif screenshot_type == ScreenshotType.FULL_PAGE_SCREENSHOT:
-      take_full_page_screenshot = True
-    else:
-      raise ValueError(f"Invalid screenshot_type {screenshot_type}")
-
     url_screenshot_response = await get_url_screenshot_response_from_loaded_page(
       page=playwright_page_manager.page,
       image_root_path=image_root_path,
-      take_full_page_screenshot=take_full_page_screenshot
+      screenshot_type=screenshot_type
     )
     if verbose:
       logger.log(f"Wrote screenshot of url {url} to {url_screenshot_response.screenshot_path}")

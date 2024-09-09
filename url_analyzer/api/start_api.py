@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import jwt
 
 from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
-from url_analyzer.classification.classification import spider_and_classify_url, validate_classification_inputs
+from url_analyzer.classification.classification import open_and_classify_url, validate_classification_inputs
 from url_analyzer.classification.url_classification import RichUrlClassificationResponse
 
 class MaybeRichUrlClassificationResponse(BaseModel):
@@ -79,7 +79,9 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> RichUrl
       # Validate token
       payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
       print("[classify_url] payload", payload)
-      return await spider_and_classify_url(
+
+      # TODO: Make this configurable whether this is spider_and_classify_url or open_and_classify_url
+      return await open_and_classify_url(
         url=url
       )
     except jwt.ExpiredSignatureError:

@@ -2,10 +2,12 @@ from typing import Optional
 from urllib.parse import urlparse
 import dns.resolver
 
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
+from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
 from url_analyzer.classification.url_classification import RichUrlClassificationResponse, classify_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
 from url_analyzer.classification.url_to_classify import UrlToClassify
+from url_analyzer.browser_automation.run_calling_context import open_url_with_context
+from url_analyzer.browser_automation.utilities import ScreenshotType
 
 
 def domain_resolves(url: str) -> bool:
@@ -53,6 +55,24 @@ async def spider_and_classify_url(
     visited_url.write_to_directory(directory=playwright_spider.directory)
 
   url_to_classify = UrlToClassify.from_visited_url(visited_url=visited_url)
+  rich_url_classification_response = await classify_url(
+    url_to_classify=url_to_classify,
+    max_html_token_count=max_html_token_count,
+  )
+  return rich_url_classification_response
+
+async def open_and_classify_url(
+  url: str,
+  headless: bool = True,
+  max_html_token_count: int = 2000,
+  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
+) -> RichUrlClassificationResponse:
+
+  url_to_classify = await UrlToClassify.from_url_fast(
+    url=url,
+    screenshot_type=screenshot_type,
+    headless=headless
+  )
   rich_url_classification_response = await classify_url(
     url_to_classify=url_to_classify,
     max_html_token_count=max_html_token_count,

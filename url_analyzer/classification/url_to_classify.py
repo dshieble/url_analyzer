@@ -1,27 +1,24 @@
 import base64
 import logging
-from typing import Optional
+import os
+from typing import List, Optional
 
 from pydantic import BaseModel
 from url_analyzer.browser_automation.playwright_spider import VisitedUrl
 from url_analyzer.browser_automation.response_record import ResponseRecord
-from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIFY_URL, DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE, PHISHING_CLASSIFICATION_PROMPT_TEMPLATE, URL_TO_CLASSIFY_PROMPT_STRING_TEMPLATE
-from url_analyzer.llm.utilities import cutoff_string_at_token_count
-from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
-from url_analyzer.llm.constants import LLMResponse
-from url_analyzer.llm.formatting_utils import load_function_call
-from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string
-from url_analyzer.classification.image_understanding import get_image_description_string_from_visited_url
-from url_analyzer.classification.domain_data import DomainData
 from url_analyzer.browser_automation.datamodel import UrlScreenshotResponse
+from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
+from url_analyzer.browser_automation.run_calling_context import open_url_with_context
+from url_analyzer.browser_automation.utilities import ScreenshotType, get_href_links_from_page, get_image_links_from_page, get_url_screenshot_response_from_loaded_page
 
+IMAGE_ROOT_PATH = os.path.join( os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), "outputs/images")
 
 class UrlToClassify(BaseModel):
   url: str
   html: str
   url_screenshot_response: Optional[UrlScreenshotResponse] = None
   urls_on_page: Optional[list[str]] = None
-  response_log: Optional[ResponseRecord] = None
+  response_log: Optional[List[ResponseRecord]] = None
 
   @classmethod
   def from_visited_url(cls, visited_url: VisitedUrl) -> "UrlToClassify":
@@ -31,4 +28,34 @@ class UrlToClassify(BaseModel):
       url_screenshot_response=visited_url.url_screenshot_response,  
       urls_on_page=visited_url.urls_on_page,
       response_log=visited_url.open_url_browser_url_visit.response_log
+    )
+  
+  @classmethod
+  async def from_url_fast(
+    cls,
+    url: str,
+    screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT,
+    headless: bool = True
+  ) -> "UrlToClassify":
+    async with PlaywrightPageManagerContext(playwright_page_manager=(
+      await PlaywrightPageManager.construct(headless=headless)
+    )) as playwright_page_manager:
+
+      browser_url_visit = (await open_url_with_context(playwright_page_manager=playwright_page_manager, url=url)).unwrap()
+      url_screenshot_response = await get_url_screenshot_response_from_loaded_page(
+        page=playwright_page_manager.page,
+        image_root_path=IMAGE_ROOT_PATH,
+        screenshot_type=screenshot_type
+      )
+
+      href_links = await get_href_links_from_page(page=playwright_page_manager.page)
+      image_links = await get_image_links_from_page(page=playwright_page_manager.page)
+      urls_on_page = set(href_links + image_links)
+
+    return cls(
+      url=browser_url_visit.ending_url,
+      html=browser_url_visit.ending_html,
+      url_screenshot_response=url_screenshot_response,
+      urls_on_page=urls_on_page,
+      response_log=browser_url_visit.response_log
     )

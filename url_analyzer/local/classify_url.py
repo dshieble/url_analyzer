@@ -10,13 +10,13 @@ sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'
 
 
 from url_analyzer.browser_automation.playwright_spider import load_visited_url_list_from_path
-from url_analyzer.classification.classification import spider_and_classify_url
+from url_analyzer.classification.classification import open_and_classify_url
 
 
 
 async def main(args):
 
-  rich_url_classification_response = await spider_and_classify_url(
+  rich_url_classification_response = await open_and_classify_url(
     url=args.url,
     headless=not args.not_headless,
     max_html_token_count=2000,
