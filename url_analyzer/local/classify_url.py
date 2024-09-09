@@ -9,7 +9,6 @@ import asyncio
 sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'))
 
 
-from url_analyzer.classification.url_classification import classify_visited_url
 from url_analyzer.browser_automation.playwright_spider import load_visited_url_list_from_path
 from url_analyzer.classification.classification import spider_and_classify_url
 

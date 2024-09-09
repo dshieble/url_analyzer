@@ -1,15 +1,11 @@
-
-
-import json
-import logging
-import socket
 from typing import Optional
 from urllib.parse import urlparse
+import dns.resolver
 
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider, ScreenshotType
-from url_analyzer.classification.url_classification import RichUrlClassificationResponse, classify_visited_url
+from url_analyzer.classification.url_classification import RichUrlClassificationResponse, classify_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
-import dns.resolver
+from url_analyzer.classification.url_to_classify import UrlToClassify
 
 
 def domain_resolves(url: str) -> bool:
@@ -56,8 +52,9 @@ async def spider_and_classify_url(
     )
     visited_url.write_to_directory(directory=playwright_spider.directory)
 
-  rich_url_classification_response = await classify_visited_url(
-    visited_url=visited_url,
+  url_to_classify = UrlToClassify.from_visited_url(visited_url=visited_url)
+  rich_url_classification_response = await classify_url(
+    url_to_classify=url_to_classify,
     max_html_token_count=max_html_token_count,
   )
   return rich_url_classification_response

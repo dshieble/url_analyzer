@@ -41,7 +41,7 @@ An LLM-written description of a screenshot of the page is:
 ```
 """
 
-VISITED_URL_PROMPT_STRING_TEMPLATE = """
+URL_TO_CLASSIFY_PROMPT_STRING_TEMPLATE = """
 The url of the page is: {url}
 
 {domain_data_description_string}
@@ -70,7 +70,7 @@ You are a security analyst at a large company. You have been tasked with classif
 
 Here is a description of the url
 === Start Description ===
-{visited_url_string}
+{url_to_classify_string}
 === End Description ===
 
 Please classify the url as either phishing or not phishing.

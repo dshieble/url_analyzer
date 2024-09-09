@@ -1,6 +1,5 @@
 # Prioritized TODO
 
-- improve user display to show a cleaner organized output
 
 - increase speed of the logic to fetch the HTML+Image by refactoring the search logic to just grab the page rather than run a full spider
   - potentially surface both options in the API
@@ -24,9 +23,11 @@
 
 
 # Performance Backlog
+- change the classifier to be multiclass (phishing, suspicious, safe) to cover stuff like mail1.pages.dev
+- add LLM insights to the display
+  - impersonated brands
 - try switching to Gemini Flash as a simple free option https://ai.google.dev/pricing
 - integrate with webarena schema, especially viewport visible HTML https://github.com/web-arena-x/webarena/blob/1469b7c9d8eaec3177855b3131569751f43a40d6/browser_env/processors.py#L174
-
 
 
 
@@ -34,3 +35,4 @@ xxx- figure out how to capture popups etc to prevent screenshots of the wrong pa
 xx- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 xx- pipe a description of the image to the LLM classification logic
 xx- add IP and domain intelligence to the prompt, http response, and page display
+xx- improve user display to show a cleaner organized output

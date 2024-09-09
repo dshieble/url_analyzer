@@ -3,16 +3,16 @@ import logging
 from typing import Optional
 
 from pydantic import BaseModel
-from url_analyzer.browser_automation.playwright_spider import VisitedUrl
 from url_analyzer.browser_automation.response_record import ResponseRecord
-from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIFY_URL, DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE, PHISHING_CLASSIFICATION_PROMPT_TEMPLATE, VISITED_URL_PROMPT_STRING_TEMPLATE
+from url_analyzer.classification.prompts import CLASSIFICATION_FUNCTION, CLASSIFY_URL, DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE, PHISHING_CLASSIFICATION_PROMPT_TEMPLATE, URL_TO_CLASSIFY_PROMPT_STRING_TEMPLATE
 from url_analyzer.llm.utilities import cutoff_string_at_token_count
 from url_analyzer.llm.openai_interface import get_response_from_prompt_one_shot
 from url_analyzer.llm.constants import LLMResponse
 from url_analyzer.llm.formatting_utils import load_function_call
 from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string
-from url_analyzer.classification.image_understanding import get_image_description_string_from_visited_url
+from url_analyzer.classification.image_understanding import get_image_description_string_from_url_to_classify
 from url_analyzer.classification.domain_data import DomainData
+from url_analyzer.classification.url_to_classify import UrlToClassify
 
 
 
@@ -20,8 +20,8 @@ class PageData(BaseModel):
   base64_encoded_image: Optional[bytes] = None
 
   @classmethod
-  async def from_visited_url(cls, visited_url: VisitedUrl) -> "PageData":
-    screenshot_bytes = await visited_url.url_screenshot_response.get_screenshot_bytes()
+  async def from_url_to_classify(cls, url_to_classift: UrlToClassify) -> "PageData":
+    screenshot_bytes = await url_to_classift.url_screenshot_response.get_screenshot_bytes()
     base64_encoded_image = base64.b64encode(screenshot_bytes).decode("utf-8")
     return cls(
       base64_encoded_image=base64_encoded_image
@@ -45,7 +45,7 @@ class RichUrlClassificationResponse(BaseModel):
   @classmethod
   async def construct(
     cls,
-    visited_url: VisitedUrl,
+    url_to_classify: UrlToClassify,
     domain_data: DomainData,
     llm_response: LLMResponse
   ) -> "RichUrlClassificationResponse":
@@ -73,7 +73,7 @@ class RichUrlClassificationResponse(BaseModel):
           """
         )
     return cls(
-      page_data=await PageData.from_visited_url(visited_url=visited_url),
+      page_data=await PageData.from_url_to_classify(url_to_classify=url_to_classify),
       domain_data=domain_data,
       url_classification=url_classification,
       llm_response=llm_response
@@ -104,8 +104,8 @@ def get_network_log_string_from_response_log(
 
 
 
-async def convert_visited_url_to_string(
-  visited_url: VisitedUrl,
+async def convert_url_to_classify_to_string(
+  url_to_classify: UrlToClassify,
   domain_data: DomainData,
   max_html_token_count: int = 4000,
   max_urls_on_page_string_token_count: int = 4000,
@@ -114,13 +114,13 @@ async def convert_visited_url_to_string(
   generate_llm_screenshot_description: bool = True
 ) -> str:
   """
-  A method to convert a VisitedUrl object to a string that can be used as a prompt for an LLM
+  A method to convert a UrlToClassify object to a string that can be used as a prompt for an LLM
   """
-  print(f"[convert_visited_url_to_string] Converting visited url to string: {visited_url.url}")
+  print(f"[convert_url_to_classify_to_string] Converting url to string: {url_to_classify.url}")
 
   # Domain Data String
   if domain_data is None:
-    raise ValueError("Domain data must be provided to convert_visited_url_to_string")
+    raise ValueError("Domain data must be provided to convert_url_to_classify_to_string")
   
   domain_data_description_string = DOMAIN_DATA_DESCRIPTION_STRING_TEMPLATE.format(
     domain_data_json_dump=domain_data.model_dump_json()
@@ -128,16 +128,16 @@ async def convert_visited_url_to_string(
 
   # Image description
   if generate_llm_screenshot_description:
-    print(f"[convert_visited_url_to_string] Generating an LLM image description of the url screenshot for {visited_url.url}")
-    optional_image_description_string = await get_image_description_string_from_visited_url(visited_url=visited_url)
+    print(f"[convert_url_to_classify_to_string] Generating an LLM image description of the url screenshot for {url_to_classify.url}")
+    optional_image_description_string = await get_image_description_string_from_url_to_classify(url_to_classify=url_to_classify)
     image_description_string = optional_image_description_string if optional_image_description_string is not None else ""
   else:
-    print(f"[convert_visited_url_to_string] Skipping image description generation for {visited_url.url}")
+    print(f"[convert_url_to_classify_to_string] Skipping image description generation for {url_to_classify.url}")
     image_description_string = ""
 
   # HTML String
   processed_html_string = get_processed_html_string(
-    html=visited_url.open_url_browser_url_visit.ending_html,
+    html=url_to_classify.html,
     html_encoding=html_encoding
   )
   trimmed_ending_html = cutoff_string_at_token_count(
@@ -146,19 +146,19 @@ async def convert_visited_url_to_string(
   # Urls on Page String 
   # TODO: Do something smarter where you order urls by domain in a way that you preferentially cut off urls from domains where other urls are in the prompt
   trimmed_urls_on_page_string = cutoff_string_at_token_count(
-    string="\n".join(visited_url.urls_on_page),
+    string="\n".join(url_to_classify.urls_on_page),
     max_token_count=max_urls_on_page_string_token_count
   )
 
   # Network Log String
-  network_log_string = get_network_log_string_from_response_log(response_log=visited_url.open_url_browser_url_visit.response_log)
+  network_log_string = get_network_log_string_from_response_log(response_log=url_to_classify.response_log)
   trimmed_network_log_string = cutoff_string_at_token_count(
     string=network_log_string,
     max_token_count=max_network_log_string_token_count
   )
 
-  return VISITED_URL_PROMPT_STRING_TEMPLATE.format(
-    url=visited_url.url,
+  return URL_TO_CLASSIFY_PROMPT_STRING_TEMPLATE.format(
+    url=url_to_classify.url,
     domain_data_description_string=domain_data_description_string,
     image_description_string=image_description_string,
     trimmed_html=trimmed_ending_html,
@@ -167,29 +167,29 @@ async def convert_visited_url_to_string(
   )
 
 
-async def get_phishing_classification_prompt_from_visited_url(
-  visited_url: VisitedUrl,
+async def get_phishing_classification_prompt_from_url_to_classify(
+  url_to_classify: UrlToClassify,
   domain_data: DomainData,
   max_html_token_count: int = 4000,
   html_encoding: str = HTMLEncoding.RAW
 ) -> str:
-  visited_url_string = await convert_visited_url_to_string(
-    visited_url=visited_url,
+  url_to_classify_string = await convert_url_to_classify_to_string(
+    url_to_classify=url_to_classify,
     domain_data=domain_data,
     max_html_token_count=max_html_token_count,
     html_encoding=html_encoding
   )
-  return PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(visited_url_string=visited_url_string)
+  return PHISHING_CLASSIFICATION_PROMPT_TEMPLATE.format(url_to_classify_string=url_to_classify_string)
 
-async def get_raw_url_classification_llm_response_from_visited_url(
-  visited_url: VisitedUrl,
+async def get_raw_url_classification_llm_response_from_url_to_classify(
+  url_to_classify: UrlToClassify,
   domain_data: DomainData,
   max_html_token_count: int = 2000,
   html_encoding: str = HTMLEncoding.RAW
 ) -> LLMResponse:
 
-  phishing_classification_prompt = await get_phishing_classification_prompt_from_visited_url(
-    visited_url=visited_url,
+  phishing_classification_prompt = await get_phishing_classification_prompt_from_url_to_classify(
+    url_to_classify=url_to_classify,
     domain_data=domain_data,
     max_html_token_count=max_html_token_count,
     html_encoding=html_encoding
@@ -202,22 +202,22 @@ async def get_raw_url_classification_llm_response_from_visited_url(
   return llm_response
   
 
-async def classify_visited_url(
-  visited_url: VisitedUrl,
+async def classify_url(
+  url_to_classify: UrlToClassify,
   max_html_token_count: int = 2000,
   html_encoding: str = HTMLEncoding.RAW
 ) -> RichUrlClassificationResponse:
   
-  domain_data = await DomainData.from_url(url=visited_url.url)
+  domain_data = await DomainData.from_url(url=url_to_classify.url)
 
-  llm_response = await get_raw_url_classification_llm_response_from_visited_url(
-    visited_url=visited_url,
+  llm_response = await get_raw_url_classification_llm_response_from_url_to_classify(
+    url_to_classify=url_to_classify,
     domain_data=domain_data,
     max_html_token_count=max_html_token_count,
     html_encoding=html_encoding
   )
   return await RichUrlClassificationResponse.construct(
-    visited_url=visited_url,
+    url_to_classify=url_to_classify,
     domain_data=domain_data,
     llm_response=llm_response
   )

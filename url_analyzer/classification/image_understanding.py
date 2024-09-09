@@ -5,6 +5,7 @@ from typing import Optional
 from url_analyzer.classification.prompts import IMAGE_DESCRIPTION_PROMPT_TEMPLATE, IMAGE_DESCRIPTION_STRING_TEMPLATE
 from url_analyzer.llm.openai_interface import DEFAULT_VISION_MODEL_NAME, get_response_from_prompt_one_shot
 from url_analyzer.browser_automation.playwright_spider import VisitedUrl
+from url_analyzer.classification.url_to_classify import UrlToClassify
 from url_analyzer.utilities.utilities import Maybe
 
 
@@ -24,13 +25,13 @@ async def get_image_summary(
     print(f"[get_image_summary] Error getting image summary: {llm_response.error}")
   return llm_response.response
 
-async def get_image_description_string_from_visited_url(
-  visited_url: VisitedUrl,
+async def get_image_description_string_from_url_to_classify(
+  url_to_classify: UrlToClassify,
   model_name: str = DEFAULT_VISION_MODEL_NAME
 ) -> Optional[str]:
   llm_written_screenshot_description = await get_image_summary(
-    url=visited_url.url,
-    image_path=visited_url.url_screenshot_response.screenshot_path,
+    url=url_to_classify.url,
+    image_path=url_to_classify.url_screenshot_response.screenshot_path,
     model_name=model_name
   )
 
@@ -39,6 +40,6 @@ async def get_image_description_string_from_visited_url(
       llm_written_screenshot_description=llm_written_screenshot_description
     )
   else:
-    logging.error(f"Could not generate an LLM image description for {visited_url.url}")
+    logging.error(f"Could not generate an LLM image description for {url_to_classify.url}")
     image_description_string = None
   return image_description_string
