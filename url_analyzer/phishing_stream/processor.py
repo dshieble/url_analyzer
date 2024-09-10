@@ -3,10 +3,12 @@ import datetime
 import os
 import uuid
 
+import httpx
 import tqdm
 from termcolor import colored
 
 from url_analyzer.phishing_stream.keyword_domain_scorer import KeywordDomainScorer
+from url_analyzer.domain_analysis.domain_lookup import DomainLookupResponse, DomainLookupTool
 
 LOGS_ROOT_PATH = os.path.join(os.path.dirname(__file__), "../../outputs/suspicious_domains")
 
@@ -16,6 +18,19 @@ def get_log_file_name() -> str:
   return os.path.join(LOGS_ROOT_PATH, str(datetime.datetime.now()) + str(uuid.uuid4())[:4])
 
 
+def is_younger_than_30_days(domain_lookup_response: DomainLookupResponse) -> bool:
+  # Parse the ISO formatted string into a datetime object
+  input_date = datetime.fromisoformat(domain_lookup_response.created)
+  
+  # Get the current date and time
+  current_date = datetime.now()
+  
+  # Calculate the difference between the current date and the input date
+  delta = current_date - input_date
+  
+  # Return True if the difference is more than 30 days, otherwise False
+  return delta < datetime.timedelta(days=30)
+
 class Processor:
   # Wrapper class
 
@@ -23,9 +38,18 @@ class Processor:
     self.domain_log = get_log_file_name()
     self.scorer = KeywordDomainScorer()
     self.score_cutoff = 100
+    self.domain_lookup_tool = DomainLookupTool()
+    self.httpx_client = httpx.AsyncClient(verify=False)
 
   def score_domain(self, domain: str, message: dict) -> int:
-    score = self.scorer.score_domain(domain=domain.lower())
+    keyword_score = self.scorer.score_domain(domain=domain.lower())
+
+    domain_lookup_response = DomainLookupResponse.from_fqdn(fqdn=domain)
+    if domain_lookup_response.created is not None:
+      if is_younger_than_30_days(domain_lookup_response.created):
+        keyword_score = keyword_score * 1.2
+      else:
+        keyword_score = keyword_score * 0.8
 
     # If issued from a free CA = more suspicious
     if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:
