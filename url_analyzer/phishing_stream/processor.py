@@ -1,4 +1,5 @@
 # Inspired by https://github.com/x0rz/phishing_catcher
+import asyncio
 import datetime
 import os
 import uuid
@@ -20,10 +21,10 @@ def get_log_file_name() -> str:
 
 def is_younger_than_30_days(domain_lookup_response: DomainLookupResponse) -> bool:
   # Parse the ISO formatted string into a datetime object
-  input_date = datetime.fromisoformat(domain_lookup_response.created)
+  input_date = datetime.datetime.fromisoformat(domain_lookup_response.created)
   
   # Get the current date and time
-  current_date = datetime.now()
+  current_date = datetime.datetime.now()
   
   # Calculate the difference between the current date and the input date
   delta = current_date - input_date
@@ -36,20 +37,23 @@ class Processor:
 
   def __init__(self):
     self.domain_log = get_log_file_name()
-    self.scorer = KeywordDomainScorer()
+    self.keyword_scorer = KeywordDomainScorer()
     self.score_cutoff = 100
     self.domain_lookup_tool = DomainLookupTool()
     self.httpx_client = httpx.AsyncClient(verify=False)
 
-  def score_domain(self, domain: str, message: dict) -> int:
-    keyword_score = self.scorer.score_domain(domain=domain.lower())
-
-    domain_lookup_response = DomainLookupResponse.from_fqdn(fqdn=domain)
+  def scale_score_by_whois_signal(self, score: float, domain: str) -> float:
+    domain_lookup_response = asyncio.run(DomainLookupResponse.from_fqdn(fqdn=domain, try_rdap=False, try_async_whois=False))
     if domain_lookup_response.created is not None:
-      if is_younger_than_30_days(domain_lookup_response.created):
-        keyword_score = keyword_score * 1.2
+      if is_younger_than_30_days(domain_lookup_response=domain_lookup_response):
+        score = score * 1.2
       else:
-        keyword_score = keyword_score * 0.8
+        score = score * 0.8
+    return score
+
+  def score_domain(self, domain: str, message: dict) -> float:
+    score = self.keyword_scorer.score_domain(domain=domain.lower())
+    score = self.scale_score_by_whois_signal(score=score, domain=domain)
 
     # If issued from a free CA = more suspicious
     if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:

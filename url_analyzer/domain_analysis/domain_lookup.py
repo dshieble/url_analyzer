@@ -18,7 +18,7 @@ import tldextract
 import urllib
 
 import whois
-from url_analyzer.utilities.utilities import get_rdn_from_url, call_with_rate_limit_retry
+from url_analyzer.utilities.utilities import get_rdn_from_url, call_with_rate_limit_retry, safe_to_str
 
 
 
@@ -240,8 +240,8 @@ class DomainLookupResponse(BaseModel):
   fqdn: str
   registrant_name: Optional[str]
   registrar_name: Optional[str]
-  status: Optional[List[str]]
-  nameservers: Optional[List[str]]
+  status: Optional[str]
+  nameservers: Optional[str]
   expires: Optional[str]
   updated: Optional[str]
   created: Optional[str]
@@ -265,26 +265,31 @@ class DomainLookupResponse(BaseModel):
     fqdn: str,
     domain_lookup_tool: "Optional[DomainLookupTool]" = None,
     httpx_client: Optional[httpx.AsyncClient] = None,
-    verbose: bool = True
+    verbose: bool = True,
+    try_rdap: bool = True,
+    try_async_whois: bool = True
   ) -> "DomainLookupResponse":
     
     registered_domain_name = get_rdn_from_url(fqdn)
     domain_lookup_tool = domain_lookup_tool if domain_lookup_tool is not None else DomainLookupTool()
     httpx_client = httpx_client if httpx_client is not None else httpx.AsyncClient(verify=False)
     
+    whois_rdap_field_to_value = {}
     # RDAP is the first try
-    whois_rdap_field_to_value = await domain_lookup_tool.get_rdap_response_from_registered_domain(
-      registered_domain_name=registered_domain_name,
-      httpx_client=httpx_client,
-      verbose=verbose
-    )
-
+    if try_rdap:
+      whois_rdap_field_to_value = await domain_lookup_tool.get_rdap_response_from_registered_domain(
+        registered_domain_name=registered_domain_name,
+        httpx_client=httpx_client,
+        verbose=verbose
+      )
+      
     # Then try async whois
-    if any([whois_rdap_field_to_value.get(response) is None for response in CRITICAL_DOMAIN_LOOKUP_FIELDS]):
-      async_whois_response = await domain_lookup_tool.get_async_whois_response_from_registered_domain(registered_domain_name=registered_domain_name)
-      for field_name, field_value in async_whois_response.items():
-        if whois_rdap_field_to_value.get(field_name) is None:
-          whois_rdap_field_to_value[field_name] = field_value
+    if try_async_whois:
+      if any([whois_rdap_field_to_value.get(response) is None for response in CRITICAL_DOMAIN_LOOKUP_FIELDS]):
+        async_whois_response = await domain_lookup_tool.get_async_whois_response_from_registered_domain(registered_domain_name=registered_domain_name)
+        for field_name, field_value in async_whois_response.items():
+          if whois_rdap_field_to_value.get(field_name) is None:
+            whois_rdap_field_to_value[field_name] = field_value
 
     # Final fallback is sync whois (slow)
     if any([whois_rdap_field_to_value.get(response) is None for response in CRITICAL_DOMAIN_LOOKUP_FIELDS]):
@@ -293,13 +298,14 @@ class DomainLookupResponse(BaseModel):
         if whois_rdap_field_to_value.get(field_name) is None:
           whois_rdap_field_to_value[field_name] = field_value
 
+    # NOTE: We need to use safe_to_str because whois data is not consistently normalized, some fields might be lists sometimes and strings other times
     return cls(
       fqdn=fqdn,
-      registrant_name=whois_rdap_field_to_value.get("registrant_name"),
-      registrar_name=whois_rdap_field_to_value.get("registrar_name"),
-      status=whois_rdap_field_to_value.get("status"),
-      nameservers=whois_rdap_field_to_value.get("nameservers"),
-      expires=whois_rdap_field_to_value.get("expires"),
-      updated=whois_rdap_field_to_value.get("updated"),
-      created=whois_rdap_field_to_value.get("created")
+      registrant_name=safe_to_str(whois_rdap_field_to_value.get("registrant_name")),
+      registrar_name=safe_to_str(whois_rdap_field_to_value.get("registrar_name")),
+      status=safe_to_str(whois_rdap_field_to_value.get("status")),
+      nameservers=safe_to_str(whois_rdap_field_to_value.get("nameservers")),
+      expires=safe_to_str(whois_rdap_field_to_value.get("expires")),
+      updated=safe_to_str(whois_rdap_field_to_value.get("updated")),
+      created=safe_to_str(whois_rdap_field_to_value.get("created"))
     )
