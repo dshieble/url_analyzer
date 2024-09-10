@@ -44,3 +44,11 @@ trafilatura
 markdownify
 asyncwhois
 whodap
+termcolor
+certstream
+websocket-client
+PyYAML
+certifi
+tld
+python_Levenshtein
+confusables

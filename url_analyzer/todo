@@ -1,7 +1,8 @@
 # Prioritized TODO
 
+- fix docker deployment to lightsail
+- develop a cleaner failure mode for urls that don't resolve like test.com
 - run tests with a bunch of example phishing pages from urlscan
-- switch the deployed vercel page to be zerophishing.com
 
 - switch to a SQL data storage scheme to enable rate limiting
 
@@ -9,7 +10,6 @@
   - JWT is saved to a file
   - API keys are created from JWT when new users are created
   - Per-API key quota is tracked in a database
-
 
 - write an API documentation page
 
@@ -28,9 +28,19 @@
 - modify the API to enable spidering as well
 
 
+
+
+# Product Backlog
+- Hook up a certstream script that logs all recently issues certificates and checks them for phishing
+
+
+
+
 xxx- figure out how to capture popups etc to prevent screenshots of the wrong page
 xx- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 xx- pipe a description of the image to the LLM classification logic
 xx- add IP and domain intelligence to the prompt, http response, and page display
 xx- improve user display to show a cleaner organized output
 xx- increase speed of the logic to fetch the HTML+Image by refactoring the search logic to just grab the page rather than run a full spider
+xx- switch the deployed vercel page to be zerophishing.com
+xx- add on http:// to urls that don't have them automatically in React
