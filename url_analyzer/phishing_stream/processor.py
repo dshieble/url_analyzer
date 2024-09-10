@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 import os
+from typing import Optional
 import uuid
 
 import httpx
@@ -19,18 +20,20 @@ def get_log_file_name() -> str:
   return os.path.join(LOGS_ROOT_PATH, str(datetime.datetime.now()) + str(uuid.uuid4())[:4])
 
 
-def is_younger_than_30_days(domain_lookup_response: DomainLookupResponse) -> bool:
+def is_created_or_updated_in_last_30_days(domain_lookup_response: DomainLookupResponse) -> Optional[bool]:
   # Parse the ISO formatted string into a datetime object
-  input_date = datetime.datetime.fromisoformat(domain_lookup_response.created)
-  
   # Get the current date and time
   current_date = datetime.datetime.now()
-  
-  # Calculate the difference between the current date and the input date
-  delta = current_date - input_date
-  
-  # Return True if the difference is more than 30 days, otherwise False
-  return delta < datetime.timedelta(days=30)
+  if domain_lookup_response.created is None or domain_lookup_response.updated is None:
+    output = None
+  else:
+    created_delta = current_date - datetime.datetime.fromisoformat(domain_lookup_response.created)
+    
+    updated_delta = current_date - datetime.datetime.fromisoformat(domain_lookup_response.updated)
+
+    # Return True if the difference is more than 30 days, otherwise False
+    output = created_delta < datetime.timedelta(days=30) or updated_delta < datetime.timedelta(days=30)
+  return output
 
 class Processor:
   # Wrapper class
@@ -44,8 +47,9 @@ class Processor:
 
   def scale_score_by_whois_signal(self, score: float, domain: str) -> float:
     domain_lookup_response = asyncio.run(DomainLookupResponse.from_fqdn(fqdn=domain, try_rdap=False, try_async_whois=False))
-    if domain_lookup_response.created is not None:
-      if is_younger_than_30_days(domain_lookup_response=domain_lookup_response):
+    created_or_updated_recently = is_created_or_updated_in_last_30_days(domain_lookup_response=domain_lookup_response)
+    if created_or_updated_recently is not None:
+      if created_or_updated_recently:
         score = score * 1.2
       else:
         score = score * 0.8
