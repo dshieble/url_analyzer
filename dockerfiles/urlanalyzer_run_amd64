@@ -1,0 +1,11 @@
+FROM danshiebler/private:url_analyzer_build-amd64
+COPY . /app
+RUN ls
+WORKDIR /app
+RUN ls
+RUN ls url_analyzer
+
+RUN mkdir /workdir
+
+EXPOSE 8000
+CMD fastapi run url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000

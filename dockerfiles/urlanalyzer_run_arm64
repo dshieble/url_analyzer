@@ -1,4 +1,4 @@
-FROM danshiebler/private:url_analyzer_build
+FROM danshiebler/private:url_analyzer_build-arm64
 COPY . /app
 RUN ls
 WORKDIR /app
