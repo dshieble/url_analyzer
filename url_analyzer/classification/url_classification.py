@@ -31,10 +31,12 @@ class PageData(BaseModel):
 class UrlClassification(BaseModel):
   thought_process: str
   is_phishing: bool
+  impersonation_strategy: str
+  credential_theft_strategy: str
   justification: str
 
   def display(self) -> str:
-    return f"Thought process: {self.thought_process}\nPhishing: {self.is_phishing}\nJustification: {self.justification}"
+    return f"Thought process: {self.thought_process}\nPhishing: {self.is_phishing}\nImpersonation Strategy: {self.impersonation_strategy}\nCredential Theft Strategy: {self.credential_theft_strategy}\nJustification: {self.justification}"
 
 class RichUrlClassificationResponse(BaseModel):
   page_data: PageData
@@ -58,9 +60,12 @@ class RichUrlClassificationResponse(BaseModel):
         and set(["thought_process", "is_phishing", "justification"]) <= set(maybe_formatted_response.content.keys())
       ):
         url_classification = UrlClassification(
-          thought_process=maybe_formatted_response.content.get("thought_process"),
-          is_phishing=maybe_formatted_response.content.get("is_phishing"),
-          justification=maybe_formatted_response.content.get("justification"),
+          thought_process=maybe_formatted_response.content["thought_process"],
+          # TODO: Why is this a boolean and not a string?
+          is_phishing=maybe_formatted_response.content["is_phishing"],
+          impersonation_strategy=maybe_formatted_response.content["impersonation_strategy"],
+          credential_theft_strategy=maybe_formatted_response.content["credential_theft_strategy"],
+          justification=maybe_formatted_response.content["justification"]
         )
       else:
         logging.error(

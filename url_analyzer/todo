@@ -27,15 +27,17 @@
 - integrate with webarena schema, especially viewport visible HTML https://github.com/web-arena-x/webarena/blob/1469b7c9d8eaec3177855b3131569751f43a40d6/browser_env/processors.py#L174
 - modify the API to enable spidering as well
 
-
-
+# UX Backlog
+- modify the display tab to toggle between
+  - a "judgement" tab that describes the LLM decision about whether the page is phishing, what the impersonation strategy is, what the credential theft strategy is, ets
+  - an "analysis" tab that describes the inputs to the analysis, including the whois, the LLM description of the image, etc
 
 # Product Backlog
-- Hook up a certstream script that logs all recently issues certificates and checks them for phishing
+-
 
 
 
-
+xx- Hook up a certstream script that logs all recently issues certificates and checks them for phishing
 xxx- figure out how to capture popups etc to prevent screenshots of the wrong page
 xx- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)
 xx- pipe a description of the image to the LLM classification logic

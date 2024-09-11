@@ -17,12 +17,20 @@ CLASSIFICATION_FUNCTION = {
             "enum": ["true", "false"],
             "description": "Your decision about whether the url is phishing or not phishing"
           },
+          "impersonation_strategy": {
+            "type": "string",
+            "description": "If the page is a phishing page, briefly describe the brands that the page is imitating. Otherwise this should be an empty string."
+          },
+          "credential_theft_strategy": {
+            "type": "string",
+            "description": "If the page is a phishing page, briefly describe the attacker's strategy for stealing credentials. Otherwise this should be an empty string."
+          },
           "justification": {
             "type": "string",
             "description": "A description of your decision, including the relevant points that led you to this conclusion."
           }
         },
-        "required": ['thought_process', 'is_phishing', 'justification']
+        "required": ['thought_process', 'is_phishing', 'impersonation_strategy', 'credential_theft_strategy', 'justification']
     }
   }
 }
@@ -64,9 +72,16 @@ When we open the page we see the following network activity:
 ```
 """
 
+
+# TODO: Change this to instead be multiclass classification of some sort
+# TODO: Add in a space for the LLM to specify the brands that the page is imitating
 PHISHING_CLASSIFICATION_PROMPT_TEMPLATE = """
 You are a security analyst at a large company. You have been tasked with classifying the following url as either phishing or not phishing.
 
+Here are some tips for making this decision
+- Phishing pages are designed to gather the user's credentials. If there is no place for the user to input credentials then it is likely not a phishing page.
+- Phishing pages often impersonate well-known websites. Look closely for signs of impersonation in the page content.
+- Expired domains are generally not phishing pages.
 
 Here is a description of the url
 === Start Description ===
