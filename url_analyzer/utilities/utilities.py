@@ -180,6 +180,8 @@ def get_parent_domains_of_fqdn(fqdn: str) -> List[str]:
   parent_domains = ['.'.join(parts[i:]) for i in range(len(parts))]
   return parent_domains
 
+
+
 def get_rdn_from_url(url: str) -> str:
   tld_extract_result = tldextract.extract(url)
   return tld_extract_result.registered_domain
@@ -187,6 +189,10 @@ def get_rdn_from_url(url: str) -> str:
 def get_fqdn_from_url(url: str) -> str:
   tld_extract_result = tldextract.extract(url)
   return '.'.join([r for r in [tld_extract_result.subdomain, tld_extract_result.domain, tld_extract_result.suffix] if len(r) > 0])
+
+def get_rdn_from_fqdn(fqdn: str) -> str:
+  return get_rdn_from_url("http://" + fqdn)
+
 
 def get_url_from_domain(domain: str) -> str:
   # Try making an http call, and see if it redirects to https

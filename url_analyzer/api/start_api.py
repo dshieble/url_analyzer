@@ -30,7 +30,15 @@ class ApiKey(BaseModel):
 app = FastAPI()
 
 # Allow CORS for the specified domain
-allow_origins = ["*"] if os.environ.get("ALLOW_CORS") == "True" else ["https://zerophishing-react-live.vercel.app"]
+allow_origins = (
+  ["*"]
+  if os.environ.get("ALLOW_CORS") == "True"
+  else
+  [
+    "https://zerophishing-react-live.vercel.app",
+    'https://www.zero-phishing.com'
+  ]
+)
 print(f"[CORSMiddleware] allow_origins: {allow_origins}")
 app.add_middleware(
   CORSMiddleware,

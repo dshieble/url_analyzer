@@ -33,7 +33,8 @@
   - an "analysis" tab that describes the inputs to the analysis, including the whois, the LLM description of the image, etc
 
 # Product Backlog
--
+- Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
+?
 
 
 

@@ -8,6 +8,18 @@ CLASSIFICATION_FUNCTION = {
     "parameters": {
         "type": "object",
         "properties": {
+          "page_summary": {
+            "type": "string",
+            "description": "A detailed summary of the page content, including the purpose, components, and interesting features of the page. This description is not intended for a security audience - if the page is not malicious then you don't need to state that in this summary."
+          },
+          "impersonation_strategy": {
+            "type": "string",
+            "description": "If the page is impersonating a known brand page, briefly describe the brands that the page is imitating. Otherwise this should be an empty string."
+          },
+          "credential_theft_strategy": {
+            "type": "string",
+            "description": "If the page has a mechanism to steal credentials page, briefly describe it. Otherwise this should be an empty string."
+          },
           "thought_process": {
             "type": "string",
             "description": "Think step by step about this url. What are the features of this url that could imply it is phishing or not phishing?"
@@ -16,14 +28,6 @@ CLASSIFICATION_FUNCTION = {
             "type": "string",
             "enum": ["true", "false"],
             "description": "Your decision about whether the url is phishing or not phishing"
-          },
-          "impersonation_strategy": {
-            "type": "string",
-            "description": "If the page is a phishing page, briefly describe the brands that the page is imitating. Otherwise this should be an empty string."
-          },
-          "credential_theft_strategy": {
-            "type": "string",
-            "description": "If the page is a phishing page, briefly describe the attacker's strategy for stealing credentials. Otherwise this should be an empty string."
           },
           "justification": {
             "type": "string",

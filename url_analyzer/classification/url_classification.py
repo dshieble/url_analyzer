@@ -1,4 +1,5 @@
 import base64
+import json
 import logging
 from typing import Optional
 
@@ -27,17 +28,25 @@ class PageData(BaseModel):
       base64_encoded_image=base64_encoded_image
     )
 
-
+URL_CLASSIFICATION_FIELDS = [
+  "page_summary",
+  "impersonation_strategy",
+  "credential_theft_strategy",
+  "thought_process",
+  "is_phishing",
+  "justification"
+]
 class UrlClassification(BaseModel):
-  thought_process: str
-  is_phishing: bool
+  page_summary: str
   impersonation_strategy: str
   credential_theft_strategy: str
+  thought_process: str
+  is_phishing: bool
   justification: str
 
-  def display(self) -> str:
-    return f"Thought process: {self.thought_process}\nPhishing: {self.is_phishing}\nImpersonation Strategy: {self.impersonation_strategy}\nCredential Theft Strategy: {self.credential_theft_strategy}\nJustification: {self.justification}"
-
+  def display(self):
+    print(json.dumps(self.model_dump_json(), indent=2))
+  
 class RichUrlClassificationResponse(BaseModel):
   page_data: PageData
   domain_data: DomainData
@@ -57,16 +66,12 @@ class RichUrlClassificationResponse(BaseModel):
       maybe_formatted_response = load_function_call(raw_llm_response=llm_response.response, argument_name=CLASSIFY_URL)
       if (
         maybe_formatted_response.content is not None
-        and set(["thought_process", "is_phishing", "justification"]) <= set(maybe_formatted_response.content.keys())
+        and set(URL_CLASSIFICATION_FIELDS) <= set(maybe_formatted_response.content.keys())
       ):
-        url_classification = UrlClassification(
-          thought_process=maybe_formatted_response.content["thought_process"],
-          # TODO: Why is this a boolean and not a string?
-          is_phishing=maybe_formatted_response.content["is_phishing"],
-          impersonation_strategy=maybe_formatted_response.content["impersonation_strategy"],
-          credential_theft_strategy=maybe_formatted_response.content["credential_theft_strategy"],
-          justification=maybe_formatted_response.content["justification"]
-        )
+        url_classification = UrlClassification(**{
+          key: maybe_formatted_response.content[key]
+          for key in URL_CLASSIFICATION_FIELDS
+        })
       else:
         logging.error(
           f"""Could not extract url classification from response!

@@ -3,13 +3,16 @@ from typing import Optional
 from pydantic import BaseModel
 from url_analyzer.domain_analysis.domain_classification import DomainClassificationResponse
 from url_analyzer.domain_analysis.domain_lookup import DomainLookupResponse
-from url_analyzer.utilities.utilities import get_fqdn_from_url
+from url_analyzer.utilities.utilities import get_fqdn_from_url, get_rdn_from_fqdn
 
 
 class DomainData(BaseModel):
 
   # The fully qualified domain name of the url
   fqdn: str
+
+  # The registered domain name of the url
+  rdn: str
 
   # True if the domain is a webhosting domain, such as pages.dev or github.io
   is_webhosting_domain: bool
@@ -58,6 +61,7 @@ class DomainData(BaseModel):
 
     return cls(
       fqdn=fqdn,
+      rdn=get_rdn_from_fqdn(fqdn=fqdn),
       is_webhosting_domain=is_webhosting_domain,
       domain_rank_magnitude_string=domain_rank_magnitude_string,
       registrant_name=domain_lookup_response.registrant_name,
