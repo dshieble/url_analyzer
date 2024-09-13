@@ -1,6 +1,7 @@
 from typing import Optional
 from urllib.parse import urlparse
 import dns.resolver
+from pydantic import BaseModel
 
 from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
 from url_analyzer.classification.url_classification import RichUrlClassificationResponse, classify_url
@@ -8,8 +9,14 @@ from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPa
 from url_analyzer.classification.url_to_classify import UrlToClassify
 from url_analyzer.browser_automation.run_calling_context import open_url_with_context
 from url_analyzer.browser_automation.utilities import ScreenshotType
+from url_analyzer.utilities.utilities import Maybe
 
 
+class MaybeRichUrlClassificationResponse(BaseModel):
+  # NOTE We make this its own BaseModel rather than using Maybe[RichUrlClassificationResponse] because we want to be able to return it from the HTTP API
+  content: Optional[RichUrlClassificationResponse] = None
+  error: Optional[str] = None
+  
 def domain_resolves(url: str) -> bool:
   try:
     # Parse the domain from the URL
@@ -66,16 +73,20 @@ async def open_and_classify_url(
   headless: bool = True,
   max_html_token_count: int = 2000,
   screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
-) -> RichUrlClassificationResponse:
+) -> MaybeRichUrlClassificationResponse:
 
-  url_to_classify = await UrlToClassify.from_url_fast(
+  maybe_url_to_classify = await UrlToClassify.from_url_fast(
     url=url,
     screenshot_type=screenshot_type,
     headless=headless
   )
-  rich_url_classification_response = await classify_url(
-    url_to_classify=url_to_classify,
-    max_html_token_count=max_html_token_count,
-  )
-  return rich_url_classification_response
+  if maybe_url_to_classify.content is not None:
+    rich_url_classification_response = await classify_url(
+      url_to_classify=maybe_url_to_classify.content,
+      max_html_token_count=max_html_token_count,
+    )
+    maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(content=rich_url_classification_response)
+  else:
+    maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(error=maybe_url_to_classify.error)
+  return maybe_rich_url_classification_response
 

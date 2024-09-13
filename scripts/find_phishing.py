@@ -1,13 +1,13 @@
 # Inspired by https://github.com/x0rz/phishing_catcher
-import datetime
+import argparse
 import os
 import ssl
 import sys
-import uuid
 
 import certifi
 import certstream
-from termcolor import colored
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from url_analyzer.phishing_stream.processor import Processor
 
@@ -17,6 +17,12 @@ if __name__ == '__main__':
   """
   python scripts/find_phishing.py
   """
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--run_whois", action="store_true")
+
+  args = parser.parse_args()
+
   sslopt = {"cert_reqs": ssl.CERT_REQUIRED, "ca_certs": certifi.where()}
-  processor = Processor()
+  processor = Processor(run_whois=args.run_whois)
   certstream.listen_for_events(processor.callback, url=CERTSTREAM_URL, sslopt=sslopt)

@@ -16,11 +16,11 @@ from url_analyzer.classification.classification import open_and_classify_url
 
 async def main(args):
 
-  rich_url_classification_response = await open_and_classify_url(
+  rich_url_classification_response = (await open_and_classify_url(
     url=args.url,
     headless=not args.not_headless,
     max_html_token_count=2000,
-  )
+  )).unwrap()
 
   print(rich_url_classification_response.url_classification.display())
 

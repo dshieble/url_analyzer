@@ -25,10 +25,10 @@ CLASSIFICATION_FUNCTION = {
             "type": "string",
             "description": "Think step by step about this url. What are the features of this url that could imply it is phishing or not phishing?"
           },
-          "is_domain_unused_or_for_sale": {
+          "page_state": {
             "type": "string",
-            "enum": ["true", "false"],
-            "description": "Your decision about whether the page content indicates that the domain is unused or for sale."
+            "enum": ["404", "Unused/Expired/For Sale", "Active"],
+            "description": "Your judgement about the state of the page."
           },
           "is_phishing": {
             "type": "string",
@@ -45,7 +45,7 @@ CLASSIFICATION_FUNCTION = {
           "impersonation_strategy",
           "credential_theft_strategy",
           "thought_process",
-          "is_domain_unused_or_for_sale",
+          "page_state",
           "is_phishing",
           "justification"
         ]

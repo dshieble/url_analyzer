@@ -11,6 +11,8 @@ from termcolor import colored
 
 from url_analyzer.phishing_stream.keyword_domain_scorer import KeywordDomainScorer
 from url_analyzer.domain_analysis.domain_lookup import DomainLookupResponse, DomainLookupTool
+from url_analyzer.domain_analysis.domain_classification import DomainClassificationResponse
+from url_analyzer.utilities.config_manager import ConfigManager
 
 LOGS_ROOT_PATH = os.path.join(os.path.dirname(__file__), "../../outputs/suspicious_domains")
 
@@ -38,15 +40,40 @@ def is_created_or_updated_in_last_30_days(domain_lookup_response: DomainLookupRe
 class Processor:
   # Wrapper class
 
-  def __init__(self):
+  def __init__(self, run_whois: bool = True):
+    self.run_whois = run_whois
     self.domain_log = get_log_file_name()
     self.keyword_scorer = KeywordDomainScorer()
     self.score_cutoff = 100
     self.domain_lookup_tool = DomainLookupTool()
     self.httpx_client = httpx.AsyncClient(verify=False)
+    self.config_manager = ConfigManager()
 
+  def scale_score_by_domain_reputation(self, score: float, domain: str) -> float:
+    domain_classification_response = asyncio.run(DomainClassificationResponse.from_fqdn(
+      fqdn=domain,
+      try_rdap=False,
+      domain_lookup_tool=self.domain_lookup_tool,
+      httpx_client=self.httpx_client,
+      try_async_whois=False,
+      config_manager=self.config_manager
+    ))
+    if (
+      domain_classification_response.best_parent_domain_rank_magnitude is not None
+      and not domain_classification_response.is_webhosting_fqdn
+      and not domain_classification_response.has_webhosting_domain_parent
+    ):
+      score = score * 0.5
+    return score
+  
   def scale_score_by_whois_signal(self, score: float, domain: str) -> float:
-    domain_lookup_response = asyncio.run(DomainLookupResponse.from_fqdn(fqdn=domain, try_rdap=False, try_async_whois=False))
+    domain_lookup_response = asyncio.run(DomainLookupResponse.from_fqdn(
+      fqdn=domain,
+      try_rdap=False,
+      domain_lookup_tool=self.domain_lookup_tool,
+      httpx_client=self.httpx_client,
+      try_async_whois=False
+    ))
     created_or_updated_recently = is_created_or_updated_in_last_30_days(domain_lookup_response=domain_lookup_response)
     if created_or_updated_recently is not None:
       if created_or_updated_recently:
@@ -57,7 +84,8 @@ class Processor:
 
   def score_domain(self, domain: str, message: dict) -> float:
     score = self.keyword_scorer.score_domain(domain=domain.lower())
-    score = self.scale_score_by_whois_signal(score=score, domain=domain)
+    if self.run_whois:
+      score = self.scale_score_by_whois_signal(score=score, domain=domain)
 
     # If issued from a free CA = more suspicious
     if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:

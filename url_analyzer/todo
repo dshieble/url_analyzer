@@ -29,8 +29,6 @@
 
 
 # UX Backlog
-- add LLM insights about whether the page is a "domain not registered" page
-- add better error handling for SSL failures
 
 
 
@@ -39,7 +37,8 @@
 ?
 
 
-
+xx- add better error handling for SSL failures
+xx- add LLM insights about whether the page is a "domain not registered" page
 xx- Hook up a certstream script that logs all recently issues certificates and checks them for phishing
 xxx- figure out how to capture popups etc to prevent screenshots of the wrong page
 xx- switch from a full html encoding to just grabbing the relevant parts of the html (especially forms)

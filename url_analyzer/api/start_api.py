@@ -13,9 +13,7 @@ from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
 from url_analyzer.classification.classification import open_and_classify_url, validate_classification_inputs
 from url_analyzer.classification.url_classification import RichUrlClassificationResponse
 
-class MaybeRichUrlClassificationResponse(BaseModel):
-  data: Optional[RichUrlClassificationResponse]
-  error: str
+
 
 class HealthCheck(BaseModel):
   """Response model to validate and return when performing a health check."""
@@ -89,9 +87,13 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> RichUrl
       print("[classify_url] payload", payload)
 
       # TODO: Make this configurable whether this is spider_and_classify_url or open_and_classify_url
-      return await open_and_classify_url(
+      maybe_rich_classification_response = await open_and_classify_url(
         url=url
       )
+      if maybe_rich_classification_response.error is not None:
+        raise HTTPException(status_code=500, detail=maybe_rich_classification_response.error)
+      else:
+        return maybe_rich_classification_response.content
     except jwt.ExpiredSignatureError:
       raise HTTPException(status_code=403, detail="Token has expired")
 
