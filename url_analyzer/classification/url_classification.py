@@ -33,6 +33,7 @@ URL_CLASSIFICATION_FIELDS = [
   "impersonation_strategy",
   "credential_theft_strategy",
   "thought_process",
+  "is_domain_unused_or_for_sale",
   "is_phishing",
   "justification"
 ]
@@ -41,6 +42,7 @@ class UrlClassification(BaseModel):
   impersonation_strategy: str
   credential_theft_strategy: str
   thought_process: str
+  is_domain_unused_or_for_sale: bool
   is_phishing: bool
   justification: str
 

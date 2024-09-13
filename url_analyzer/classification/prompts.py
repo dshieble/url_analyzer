@@ -1,5 +1,6 @@
 CLASSIFY_URL = "classify_url"
 
+
 CLASSIFICATION_FUNCTION = {
   "type": "function",
   "function": {
@@ -24,17 +25,30 @@ CLASSIFICATION_FUNCTION = {
             "type": "string",
             "description": "Think step by step about this url. What are the features of this url that could imply it is phishing or not phishing?"
           },
+          "is_domain_unused_or_for_sale": {
+            "type": "string",
+            "enum": ["true", "false"],
+            "description": "Your decision about whether the page content indicates that the domain is unused or for sale."
+          },
           "is_phishing": {
             "type": "string",
             "enum": ["true", "false"],
-            "description": "Your decision about whether the url is phishing or not phishing"
+            "description": "Your decision about whether the url is phishing or not phishing."
           },
           "justification": {
             "type": "string",
             "description": "A description of your decision, including the relevant points that led you to this conclusion."
           }
         },
-        "required": ['thought_process', 'is_phishing', 'impersonation_strategy', 'credential_theft_strategy', 'justification']
+        "required": [
+          "page_summary",
+          "impersonation_strategy",
+          "credential_theft_strategy",
+          "thought_process",
+          "is_domain_unused_or_for_sale",
+          "is_phishing",
+          "justification"
+        ]
     }
   }
 }

@@ -13,6 +13,7 @@
 
 - write an API documentation page
 
+
 # Security Requirements
 - switch AWS authentication to IAM
 - move JWT secret key storage to secrets manager
@@ -21,16 +22,17 @@
 
 # Performance Backlog
 - change the classifier to be multiclass (phishing, suspicious, safe) to cover stuff like mail1.pages.dev
-- add LLM insights to the display
-  - impersonated brands
 - try switching to Gemini Flash as a simple free option https://ai.google.dev/pricing
 - integrate with webarena schema, especially viewport visible HTML https://github.com/web-arena-x/webarena/blob/1469b7c9d8eaec3177855b3131569751f43a40d6/browser_env/processors.py#L174
 - modify the API to enable spidering as well
 
+
+
 # UX Backlog
-- modify the display tab to toggle between
-  - a "judgement" tab that describes the LLM decision about whether the page is phishing, what the impersonation strategy is, what the credential theft strategy is, ets
-  - an "analysis" tab that describes the inputs to the analysis, including the whois, the LLM description of the image, etc
+- add LLM insights about whether the page is a "domain not registered" page
+- add better error handling for SSL failures
+
+
 
 # Product Backlog
 - Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
