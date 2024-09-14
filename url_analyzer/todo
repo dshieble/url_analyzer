@@ -1,8 +1,6 @@
 # Prioritized TODO
 
-
-- write simple end-to-end unit test
-
+- remove any references to the service endpoint in the code
 - set up batch page evaluation that operates based on lightsail
 
 
