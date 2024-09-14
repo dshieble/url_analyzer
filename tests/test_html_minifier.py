@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.html_understanding.html_minify import HTML_MINIFIER, MARKDOWN_CONVERTER
+from url_analyzer.classification.html_understanding.html_minify import HTML_MINIFIER, MARKDOWN_CONVERTER
 
 class TestMinifier(unittest.TestCase):
 

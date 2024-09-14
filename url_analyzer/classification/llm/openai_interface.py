@@ -120,6 +120,7 @@ class MessageManager:
     return maybe_raw_response
 
   async def get_response(self, prompt: str, image_path: Optional[str] = None, model_name: str = DEFAULT_MODEL_NAME, temperature: float = 0, **kwargs) -> Maybe[str]:
+    content = None
     maybe_raw_response = await self._get_raw_response(prompt=prompt, image_path=image_path, temperature=temperature, model_name=model_name, **kwargs)
     if maybe_raw_response.content is None:
       maybe_response = maybe_raw_response

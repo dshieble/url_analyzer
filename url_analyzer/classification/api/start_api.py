@@ -9,9 +9,9 @@ from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel
 import jwt
 
-from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
-from url_analyzer.classification.classification import BasicUrlClassifier, validate_classification_inputs
-from url_analyzer.classification.url_classification import RichUrlClassificationResponse
+from url_analyzer.classification.api.api_key_generation import get_api_key_from_ip_address
+from url_analyzer.classification.classifier.classifier import BasicUrlClassifier, validate_classification_inputs
+from url_analyzer.classification.classifier.url_classification import RichUrlClassificationResponse
 
 
 

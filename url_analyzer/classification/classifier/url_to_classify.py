@@ -12,7 +12,8 @@ from url_analyzer.classification.browser_automation.run_calling_context import o
 from url_analyzer.classification.browser_automation.utilities import ScreenshotType, get_href_links_from_page, get_image_links_from_page, get_url_screenshot_response_from_loaded_page
 from url_analyzer.classification.utilities.utilities import Maybe
 
-IMAGE_ROOT_PATH = os.path.join( os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), "outputs/images")
+IMAGE_ROOT_PATH = os.path.join(
+  os.path.join(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'), '..'), "outputs/images")
 
 class UrlToClassify(BaseModel):
   url: str

@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'))
 
 from url_analyzer.frontend.utilities import UrlClassifierInterface
 
@@ -20,9 +20,9 @@ def main(args):
 # Usage example:
 if __name__ == '__main__':
   """
-  python frontend/run_hit_api.py --target_url=https://danshiebler.com --use_local
+  python url_analyzer/frontend/run_hit_api.py --target_url=https://danshiebler.com --use_local
 
-  python frontend/run_hit_api.py --target_url=https://danshiebler.com --use_local
+  python url_analyzer/frontend/run_hit_api.py --target_url=https://danshiebler.com --use_local
 
   """
   parser = argparse.ArgumentParser()

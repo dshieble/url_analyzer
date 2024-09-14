@@ -7,7 +7,7 @@ from typing import Any, Dict
 import sys
 import uuid
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'))
 
 from url_analyzer.frontend.utilities import classify_urls_in_text_file
 
@@ -31,10 +31,10 @@ async def main(args):
 # Usage example:
 if __name__ == '__main__':
   """
-  python frontend/run_classify_urls_in_text_file.py \
+  python url_analyzer/frontend/run_classify_urls_in_text_file.py \
     --path_to_file_with_urls /Users/danshiebler/workspace/personal/phishing/url_analyzer/data/test_safe_urls.txt
 
-  python frontend/run_classify_urls_in_text_file.py \
+  python url_analyzer/frontend/run_classify_urls_in_text_file.py \
     --path_to_file_with_urls /Users/danshiebler/workspace/personal/phishing/url_analyzer/data/test_safe_urls.txt \
     --use_local
   """

@@ -7,7 +7,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.classification.classification import BasicUrlClassifier
+from url_analyzer.classification.classifier.classifier import BasicUrlClassifier
 
 class TestEndToEnd(unittest.TestCase):
 

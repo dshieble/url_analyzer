@@ -5,7 +5,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string, process_html_for_llm
+from url_analyzer.classification.html_understanding.html_understanding import HTMLEncoding, get_processed_html_string, process_html_for_llm
 
 class TestProcessHtmlForLLM(unittest.TestCase):
 
