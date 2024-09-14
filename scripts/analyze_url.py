@@ -9,9 +9,9 @@ import asyncio
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
-from url_analyzer.browser_automation.playwright_spider import PlaywrightSpider
-from url_analyzer.browser_automation.utilities import ScreenshotType
+from url_analyzer.classification.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerContext
+from url_analyzer.classification.browser_automation.playwright_spider import PlaywrightSpider
+from url_analyzer.classification.browser_automation.utilities import ScreenshotType
 
 async def main(args):
 

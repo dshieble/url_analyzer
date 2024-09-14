@@ -1,5 +1,4 @@
 from datetime import datetime
-import dns.asyncresolver
 import dns.resolver
 import logging
 import time
@@ -9,18 +8,46 @@ from pydantic import BaseModel
 import asyncwhois
 import whodap
 
-from attr import dataclass
 import numpy as np
 import asyncio
-from urllib.parse import urlparse
 import httpx
 import tldextract
-import urllib
 
 import whois
-from url_analyzer.utilities.utilities import get_rdn_from_url, call_with_rate_limit_retry, safe_to_str
 
 
+def safe_to_str(value: Optional[Any]) -> Optional[str]:
+  if value is None:
+    return None
+  else:
+    try:
+      return str(value)
+    except ValueError as e:
+      return None
+    
+
+async def call_with_rate_limit_retry(
+  fn: Callable[[Any], Coroutine],
+  exception: Exception,
+  sleep_seconds_min: int = 2,
+  sleep_seconds_max: int = 10,
+  **kwargs
+) -> Any:
+  try:
+    out = await fn(**kwargs)
+  except exception as e:
+    print(f"Exception {str(e)} caught in call_with_rate_limit_retry")
+    sleep_seconds = 2 + (np.random.random() * (sleep_seconds_max - sleep_seconds_min))
+    
+    # NOTE: asyncio.sleep will only cause this async run to sleep, not the whole program
+    await asyncio.sleep(sleep_seconds)
+    out = await fn(**kwargs)
+  return out
+
+
+def get_rdn_from_url(url: str) -> str:
+  tld_extract_result = tldextract.extract(url)
+  return tld_extract_result.registered_domain
 
 
 class DomainLookupField:

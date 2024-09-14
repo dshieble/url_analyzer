@@ -10,8 +10,8 @@ import asyncio
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 
-from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager
-from url_analyzer.utilities.utilities import run_with_logs
+from url_analyzer.classification.browser_automation.playwright_page_manager import PlaywrightPageManager
+from url_analyzer.classification.utilities.utilities import run_with_logs
 
 
 async def main(args):

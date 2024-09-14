@@ -2,9 +2,6 @@
 
 
 
-- switch AWS authentication to IAM and reduce AWS blast radius if lightsail is compromised
-
-
 
 - run tests with a bunch of example phishing pages from https://tweetfeed.live/feeds.html or urlscan
 
@@ -38,6 +35,7 @@
 
 
 # Product Backlog
+- Add a page to the website that presents all discovered phishing urls, and build streams to start discovering pages to publish to this for detection people to access
 - Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
 - Add a hosted nested browser to lightsail
 

@@ -6,8 +6,13 @@ Options
 import dns.resolver
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 from pydantic import BaseModel
-from url_analyzer.utilities.utilities import get_parent_domains_of_fqdn
-from url_analyzer.utilities.config_manager import ConfigManager
+from url_analyzer.domain_analysis.config_manager import ConfigManager
+
+def get_parent_domains_of_fqdn(fqdn: str) -> List[str]:
+  parts = fqdn.split('.')
+  parent_domains = ['.'.join(parts[i:]) for i in range(len(parts))]
+  return parent_domains
+
 
 
 class DomainClassificationResponse(BaseModel):

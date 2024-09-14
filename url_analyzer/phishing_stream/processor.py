@@ -12,7 +12,7 @@ from termcolor import colored
 from url_analyzer.phishing_stream.keyword_domain_scorer import KeywordDomainScorer
 from url_analyzer.domain_analysis.domain_lookup import DomainLookupResponse, DomainLookupTool
 from url_analyzer.domain_analysis.domain_classification import DomainClassificationResponse
-from url_analyzer.utilities.config_manager import ConfigManager
+from url_analyzer.domain_analysis.config_manager import ConfigManager
 
 LOGS_ROOT_PATH = os.path.join(os.path.dirname(__file__), "../../outputs/suspicious_domains")
 
