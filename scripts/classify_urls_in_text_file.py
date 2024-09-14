@@ -23,9 +23,9 @@ async def main(args):
   )
   for url, maybe_rich_url_classification_response in url_to_maybe_rich_url_classification_response.items():
     if maybe_rich_url_classification_response.content is not None:
-      with open(log_file, "w") as f:
+      with open(log_file, "a") as f:
         f.write(
-          json.dumps({url: json.loads(maybe_rich_url_classification_response.content.model_dump_json())}, indent=2)
+          json.dumps({url: json.loads(maybe_rich_url_classification_response.content.url_classification.model_dump_json())}, indent=2)
         )
         f.write("\n---------\n")
 
@@ -33,6 +33,44 @@ async def main(args):
 # Usage example:
 if __name__ == '__main__':
   """
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  TODO: Migrate the to API-based for security reasons
+
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
   python scripts/classify_urls_in_text_file.py --text_file /Users/danshiebler/workspace/personal/phishing/url_analyzer/data/test_safe_urls.txt
   """
   parser = argparse.ArgumentParser()

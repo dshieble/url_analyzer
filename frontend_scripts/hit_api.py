@@ -65,7 +65,7 @@ class UrlChecker:
 # Usage example:
 if __name__ == '__main__':
   """
-  python scripts/hit_api.py --target_url=https://danshiebler.com --use_local
+  python frontend_scripts/hit_api.py --target_url=https://danshiebler.com --use_local
   
   """
   parser = argparse.ArgumentParser()

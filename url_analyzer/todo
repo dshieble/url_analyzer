@@ -1,8 +1,20 @@
 # Prioritized TODO
 
 
-- set up an API interface, write an API documentation page and link it at the top
-- run tests with a bunch of example phishing pages from urlscan
+- write simple end-to-end unit test
+
+- set up batch page evaluation that operates based on lightsail
+
+
+- switch AWS authentication to IAM and reduce AWS blast radius if lightsail is compromised
+
+
+
+- run tests with a bunch of example phishing pages from https://tweetfeed.live/feeds.html or urlscan
+
+
+- add a basic end-to-end local testing suite to run before pushing to lightsail
+
 
 - switch to a SQL data storage scheme to enable rate limiting
 
@@ -13,7 +25,6 @@
 
 
 # Security Requirements
-- switch AWS authentication to IAM
 - move JWT secret key storage to secrets manager
 - move lightsail DNS to proxy through zero-phishing
 
@@ -27,7 +38,7 @@
 
 
 # UX Backlog
-
+- write an API documentation page and link it at the top of the website
 
 
 # Product Backlog
