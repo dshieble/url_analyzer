@@ -38,55 +38,68 @@ def validate_classification_inputs(url: str) -> Optional[str]:
     error = f"ERROR: The URL {url} was not found!"
   return error
 
-
-async def spider_and_classify_url(
-  url: str,
-  headless: bool = True,
-  included_fqdn_regex: Optional[str] = None,
-  max_html_token_count: int = 2000,
-  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
-) -> RichUrlClassificationResponse:
+class UrlClassifier:
+  async def classify_url(self, url: str, *args, **kwargs) -> MaybeRichUrlClassificationResponse:
+    raise NotImplementedError
   
-  playwright_spider = await PlaywrightSpider.construct(
-    url_list=[url],
-    included_fqdn_regex=(".*" if included_fqdn_regex is None else included_fqdn_regex),
-    screenshot_type=screenshot_type,
-  )
-  async with PlaywrightPageManagerContext(playwright_page_manager=(
-    await PlaywrightPageManager.construct(headless=headless)
-  )) as playwright_page_manager:
-    visited_url = await playwright_spider.get_visited_url(
+class BasicUrlClassifier(UrlClassifier):
+  async def classify_url(
+    self,
+    url: str,
+    headless: bool = True,
+    max_html_token_count: int = 2000,
+    screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
+  ) -> MaybeRichUrlClassificationResponse:
+
+    maybe_url_to_classify = await UrlToClassify.from_url_fast(
       url=url,
-      playwright_page_manager=playwright_page_manager
+      screenshot_type=screenshot_type,
+      headless=headless
     )
-    visited_url.write_to_directory(directory=playwright_spider.directory)
+    if maybe_url_to_classify.content is not None:
+      rich_url_classification_response = await classify_url(
+        url_to_classify=maybe_url_to_classify.content,
+        max_html_token_count=max_html_token_count,
+      )
+      maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(content=rich_url_classification_response)
+    else:
+      maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(error=maybe_url_to_classify.error)
+    return maybe_rich_url_classification_response
 
-  url_to_classify = UrlToClassify.from_visited_url(visited_url=visited_url)
-  rich_url_classification_response = await classify_url(
-    url_to_classify=url_to_classify,
-    max_html_token_count=max_html_token_count,
-  )
-  return rich_url_classification_response
 
-async def open_and_classify_url(
-  url: str,
-  headless: bool = True,
-  max_html_token_count: int = 2000,
-  screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
-) -> MaybeRichUrlClassificationResponse:
-
-  maybe_url_to_classify = await UrlToClassify.from_url_fast(
-    url=url,
-    screenshot_type=screenshot_type,
-    headless=headless
-  )
-  if maybe_url_to_classify.content is not None:
-    rich_url_classification_response = await classify_url(
-      url_to_classify=maybe_url_to_classify.content,
-      max_html_token_count=max_html_token_count,
+class SpiderUrlClassifier(UrlClassifier):
+  async def classify_url(
+    self,
+    url: str,
+    headless: bool = True,
+    included_fqdn_regex: Optional[str] = None,
+    max_html_token_count: int = 2000,
+    screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
+  ) -> MaybeRichUrlClassificationResponse:
+    
+    playwright_spider = await PlaywrightSpider.construct(
+      url_list=[url],
+      included_fqdn_regex=(".*" if included_fqdn_regex is None else included_fqdn_regex),
+      screenshot_type=screenshot_type,
     )
-    maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(content=rich_url_classification_response)
-  else:
-    maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(error=maybe_url_to_classify.error)
-  return maybe_rich_url_classification_response
+    async with PlaywrightPageManagerContext(playwright_page_manager=(
+      await PlaywrightPageManager.construct(headless=headless)
+    )) as playwright_page_manager:
+      visited_url = await playwright_spider.get_visited_url(
+        url=url,
+        playwright_page_manager=playwright_page_manager
+      )
+      visited_url.write_to_directory(directory=playwright_spider.directory)
+
+    url_to_classify = UrlToClassify.from_visited_url(visited_url=visited_url)
+    try:
+      rich_url_classification_response = await classify_url(
+        url_to_classify=url_to_classify,
+        max_html_token_count=max_html_token_count,
+      )
+    except Exception as e:
+      maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(error=f"Error classifying URL {url}")
+    else:
+      maybe_rich_url_classification_response = MaybeRichUrlClassificationResponse(content=rich_url_classification_response)
+    return maybe_rich_url_classification_response
 

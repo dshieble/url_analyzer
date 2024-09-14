@@ -10,7 +10,7 @@ from pydantic import BaseModel
 import jwt
 
 from url_analyzer.api.api_key_generation import get_api_key_from_ip_address
-from url_analyzer.classification.classification import open_and_classify_url, validate_classification_inputs
+from url_analyzer.classification.classification import BasicUrlClassifier, open_and_classify_url, validate_classification_inputs
 from url_analyzer.classification.url_classification import RichUrlClassificationResponse
 
 
@@ -87,7 +87,7 @@ async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> RichUrl
       print("[classify_url] payload", payload)
 
       # TODO: Make this configurable whether this is spider_and_classify_url or open_and_classify_url
-      maybe_rich_classification_response = await open_and_classify_url(
+      maybe_rich_classification_response = await BasicUrlClassifier().classify_url(
         url=url
       )
       if maybe_rich_classification_response.error is not None:

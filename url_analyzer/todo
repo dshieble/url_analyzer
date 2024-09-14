@@ -1,7 +1,7 @@
 # Prioritized TODO
 
-- fix docker deployment to lightsail
-- develop a cleaner failure mode for urls that don't resolve like test.com
+
+- set up an API interface, write an API documentation page and link it at the top
 - run tests with a bunch of example phishing pages from urlscan
 
 - switch to a SQL data storage scheme to enable rate limiting
@@ -10,8 +10,6 @@
   - JWT is saved to a file
   - API keys are created from JWT when new users are created
   - Per-API key quota is tracked in a database
-
-- write an API documentation page
 
 
 # Security Requirements
@@ -36,7 +34,8 @@
 - Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
 ?
 
-
+xx- develop a cleaner failure mode for urls that don't resolve like test.com
+xx- fix docker deployment to lightsail
 xx- add better error handling for SSL failures
 xx- add LLM insights about whether the page is a "domain not registered" page
 xx- Hook up a certstream script that logs all recently issues certificates and checks them for phishing
