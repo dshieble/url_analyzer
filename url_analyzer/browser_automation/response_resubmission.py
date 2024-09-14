@@ -23,21 +23,10 @@ from playwright.async_api import async_playwright
 from playwright._impl._page import Page
 from playwright_stealth import stealth_async
 import requests
-from unidecode import unidecode
-import validators
-import inscriptis
-import pytesseract
 import json
 import time
 import os
-from playwright.async_api._generated import Request
-import dill
-import curlify
-from pydantic import BaseModel, ValidationError
-import urllib.parse
 
-from url_analyzer.utilities.s3_utils import AsyncS3Client
-from url_analyzer.utilities.utilities import filter_url, get_fqdn_from_url, modify_url
 from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager, PlaywrightPageManagerCloneContext
 from url_analyzer.browser_automation.response_record import ResponseRecord
 

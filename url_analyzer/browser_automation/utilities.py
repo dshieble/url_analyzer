@@ -25,7 +25,7 @@ import curlify
 from playwright.async_api._generated import ElementHandle, Locator
 from urllib.parse import urljoin
 
-from url_analyzer.utilities.s3_utils import AsyncS3Client
+from url_analyzer.utilities.file_utils import AsyncFileClient
 from url_analyzer.browser_automation.datamodel import NetworkLog, PageLoadResponse, UrlScreenshotResponse, scroll_page_and_wait, wait_for_load_state_safe
 from url_analyzer.browser_automation.response_record import get_response_log
 
@@ -104,7 +104,7 @@ async def get_url_screenshot_response_from_loaded_page(
   page_load_response: Optional[PageLoadResponse] = None,
   scroll_timeout: int = 500,
   timestamp: Optional[int] = None,
-  s3_client: Optional[AsyncS3Client] = None,
+  client: Optional[AsyncFileClient] = None,
   screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT
 ) -> UrlScreenshotResponse:
   """
@@ -120,7 +120,6 @@ async def get_url_screenshot_response_from_loaded_page(
 
   page_load_response = PageLoadResponse(page_loaded_successfully=True) if page_load_response is None else page_load_response
   timestamp = int(time.time()) if timestamp is None else timestamp
-  s3_client = AsyncS3Client() if s3_client is None else s3_client
   try:
     # Scroll to the top of the page, useful for forcing the page to load
     await scroll_page_and_wait(page=page, timeout=scroll_timeout)
@@ -139,23 +138,21 @@ async def get_url_screenshot_response_from_loaded_page(
     else:
       url_screenshot_response = await UrlScreenshotResponse.from_screenshot_bytes(
         screenshot_bytes=screenshot_bytes,
-        s3_client=s3_client,
         url=page.url,
         image_root_path=image_root_path,
         timestamp=timestamp,
         html=html,
-        page_load_response=page_load_response)
+        page_load_response=page_load_response,
+        client=client)
   return url_screenshot_response
 
 async def get_url_screenshot_response(
   page: Page,
   url: Optional[str] = None,
-  s3_client: Optional[AsyncS3Client] = None,
   scroll_timeout: int = 500,
   screenshot_type: str = ScreenshotType.VIEWPORT_SCREENSHOT,
 ) -> UrlScreenshotResponse:
   url = page.url if url is None else url
-  s3_client = AsyncS3Client() if s3_client is None else s3_client
   # NOTE: Page is already assumed to have been created and shrouded in stealth
   timestamp = int(time.time())
   
@@ -185,20 +182,17 @@ async def create_context_and_get_url_screenshot_response(
   browser: "BrowserType",
   url: str,
   *args,
-  s3_client: Optional[AsyncS3Client] = None,
   **kwargs
 ) -> UrlScreenshotResponse:
-  s3_client = AsyncS3Client() if s3_client is None else s3_client
   context = await browser.new_context()
   page = await context.new_page()
   await stealth_async(page)
-  return await get_url_screenshot_response(page=page, url=url, *args, s3_client=s3_client, **kwargs)
+  return await get_url_screenshot_response(page=page, url=url, *args, **kwargs)
 
 
 async def get_url_screenshot_response_from_url(
   url: str,
   *args,
-  s3_client: Optional[AsyncS3Client] = None,
   **kwargs
 ) -> UrlScreenshotResponse:
   """
@@ -210,7 +204,7 @@ async def get_url_screenshot_response_from_url(
   async with async_playwright() as playwright_context_manager:
     browser = await playwright_context_manager.chromium.launch(headless=True)
     return await create_context_and_get_url_screenshot_response(
-      browser=browser, url=url, *args, s3_client=s3_client, **kwargs)
+      browser=browser, url=url, *args, **kwargs)
 
 
 def remove_html_comments(html: str) -> str:

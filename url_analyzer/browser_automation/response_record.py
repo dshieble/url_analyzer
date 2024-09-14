@@ -36,7 +36,6 @@ import curlify
 from pydantic import BaseModel, ValidationError
 import urllib.parse
 
-from url_analyzer.utilities.s3_utils import AsyncS3Client
 from url_analyzer.utilities.utilities import filter_url, get_fqdn_from_url, modify_url, pydantic_create, safe_apply, safe_to_str
 
 

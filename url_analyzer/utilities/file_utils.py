@@ -11,7 +11,43 @@ import aiofiles
 
 AWS_REGION_NAME = "us-east-1"
 
-class AsyncS3Client:
+
+
+class AsyncFileClient:
+  async def load_string(self, path: str) -> str:
+    raise NotImplementedError("load_string not implemented for AsyncFileClient")
+  
+  async def load_object(self, path: str) -> str:
+    raise NotImplementedError("load_object not implemented for AsyncFileClient")
+
+  async def write_object(self, obj: Any, s3_path: str, run_create_bucket_if_not_exists: bool = False):
+    raise NotImplementedError("write_object not implemented for AsyncFileClient")
+
+class AsyncLocalFileClient(AsyncFileClient):
+  async def load_string(self, path: str) -> str:
+    """
+    Read the contents of the file path into a string
+    """
+    raw_string = await self.load_object(path=path)
+    return raw_string.decode('utf-8')
+  
+  async def load_object(self, path: str) -> str:
+    """
+    Read the raw contents of the file path
+    """
+    # Load from local
+    async with aiofiles.open(path, mode='rb') as f:
+      raw = await f.read()
+    return raw
+
+  async def write_object(self, obj: Any, path: str):
+    """
+    Write a single object to the file path
+    """
+    async with aiofiles.open(path, mode='wb') as f:
+      await f.write(obj)
+
+class AsyncS3Client(AsyncFileClient):
 
   def __init__(
     self,
@@ -47,14 +83,14 @@ class AsyncS3Client:
         logging.error(f"S3 Bucket {s3_bucket_name} not found! Creating the bucket.")
         await s3_client.create_bucket(Bucket=s3_bucket_name)
 
-  async def load_string_from_s3(self, s3_path: str) -> str:
+  async def load_string(self, s3_path: str) -> str:
     """
     Read the contents of s3 at s3_path into a string
     """
-    raw_string = await self.load_object_from_s3(s3_path=s3_path)
+    raw_string = await self.load_object(s3_path=s3_path)
     return raw_string.decode('utf-8')
   
-  async def load_object_from_s3(self, s3_path: str) -> str:
+  async def load_object(self, s3_path: str) -> str:
     """
     Read the raw contents of s3 at s3_path
     """
@@ -73,7 +109,7 @@ class AsyncS3Client:
         raw = await f.read()
     return raw
 
-  async def write_object_to_s3(self, obj: Any, s3_path: str, run_create_bucket_if_not_exists: bool = False):
+  async def write_object(self, obj: Any, s3_path: str, run_create_bucket_if_not_exists: bool = False):
     """
     Write a single object to s3 at s3_path
     """
@@ -142,3 +178,9 @@ class AsyncS3Client:
       self.s3_buffer[s3_directory_path] += string_list
       if len(self.s3_buffer[s3_directory_path]) >= self.buffer_length:
         await self.write_buffer_to_s3(s3_directory_path=s3_directory_path)
+
+def get_client_from_path(path: str) -> AsyncFileClient:
+  if path.startswith("s3://"):
+    return AsyncS3Client()
+  else:
+    return AsyncLocalFileClient()

@@ -38,7 +38,7 @@ import urllib.parse
 from playwright.async_api._generated import ElementHandle
 
 
-from url_analyzer.utilities.s3_utils import AsyncS3Client
+from url_analyzer.utilities.file_utils import AsyncFileClient, get_client_from_path
 from url_analyzer.utilities.utilities import modify_url, pydantic_create, pydantic_validate
 from url_analyzer.browser_automation.response_record import get_response_log, ResponseRecord
 
@@ -100,27 +100,21 @@ class UrlScreenshotResponse(BaseModel):
       """
     )
 
-  async def get_screenshot_ocr_text(self, s3_client: Optional[AsyncS3Client] = None) -> str:
+  async def get_screenshot_bytes(self, client: Optional[AsyncFileClient] = None) -> bytes:
     """
     If the screenshot bytes is None, fetch the image from s3 first to set it
     """
-    s3_client = AsyncS3Client() if s3_client is None else s3_client
-    screenshot_bytes = await s3_client.load_object_from_s3(s3_path=self.screenshot_path)
-    return pytesseract.image_to_string(PIL.Image.open(io.BytesIO(screenshot_bytes)))
-
-  async def get_screenshot_bytes(self, s3_client: Optional[AsyncS3Client] = None) -> bytes:
-    """
-    If the screenshot bytes is None, fetch the image from s3 first to set it
-    """
-    s3_client = AsyncS3Client() if s3_client is None else s3_client
-    screenshot_bytes = await s3_client.load_object_from_s3(s3_path=self.screenshot_path)
+    if client is None:
+      client = get_client_from_path(path=self.screenshot_path)
+        
+    screenshot_bytes = await client.load_object(path=self.screenshot_path)
     return screenshot_bytes
 
   @classmethod
   async def from_screenshot_bytes(
     cls,
     screenshot_bytes: bytes,
-    s3_client: AsyncS3Client,
+    client: Optional[AsyncFileClient] = None,
     *args,
     image_root_path: Optional[str] = None,
     verbose=True,
@@ -132,8 +126,11 @@ class UrlScreenshotResponse(BaseModel):
     
     # Save the image to the screenshot path
     screenshot_path = response.generate_screenshot_path(image_root_path=image_root_path)
+    if client is None:
+      client = get_client_from_path(path=screenshot_path)
+        
     try:
-      await s3_client.write_object_to_s3(obj=screenshot_bytes, s3_path=screenshot_path)
+      await client.write_object(obj=screenshot_bytes, path=screenshot_path)
 
     except PIL.UnidentifiedImageError as e:
       if verbose:
@@ -159,10 +156,11 @@ class UrlScreenshotResponse(BaseModel):
     image_hash = str(hash(self.url + str(self.timestamp)))
     return f"{image_root_path}/{image_hash}.png"
 
-  async def get_image(self, s3_client: Optional[AsyncS3Client] = None) -> PIL.Image:
+  async def get_image(self, client: Optional[AsyncFileClient] = None) -> PIL.Image:
     if self.screenshot_path is not None:
-      s3_client = AsyncS3Client() if s3_client is None else s3_client
-      screenshot_bytes = await s3_client.load_object_from_s3(s3_path=self.screenshot_path)
+      if client is None:
+        client = get_client_from_path(path=self.screenshot_path)
+      screenshot_bytes = await client.load_object(path=self.screenshot_path)
       image = PIL.Image.open(io.BytesIO(screenshot_bytes)).convert('RGB')
     else:
       image = None

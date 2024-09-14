@@ -27,16 +27,11 @@ import time
 import re
 from typing import List, Optional, Union
 
-from playwright.async_api import async_playwright
-from playwright.async_api._generated import ElementHandle
-from playwright_stealth import stealth_async
 import inscriptis
 
 from unidecode import unidecode
 
-from url_analyzer.browser_automation.playwright_page_manager import PlaywrightPageManager
 from url_analyzer.browser_automation.utilities import get_outer_html_list_from_locator_list, get_url_screenshot_response_from_loaded_page, remove_hidden_elements, remove_html_comments, remove_html_metadata
-from url_analyzer.browser_automation.datamodel import UrlScreenshotResponse, scroll_page_and_wait
 from url_analyzer.browser_automation.playwright_driver import PlaywrightDriver
 
 from url_analyzer.html_understanding.html_minify import MARKDOWN_CONVERTER
@@ -206,89 +201,6 @@ class LLMPageContent:
 
   def as_string(self, **kwargs) -> str:
     return json_dumps_safe(self.as_string_dict(**kwargs))
-
-
-
-
-
-
-@dataclass
-class WebsiteDescription:
-  """
-  A data structure that stores the details of a webpage
-
-  TODO: Unify with UrlScreenshotResponse and maybe incoporate OCR
-  """
-  url: str
-  visible_html: str
-  visible_text: str
-  url_screenshot_response: UrlScreenshotResponse
-  ocr_screenshot_text: str
-
-
-
-async def get_visible_html_and_text(playwright_page_manager: PlaywrightPageManager) -> Tuple[str, str]:
-
-  # TODO: Switch visibility assessment to use javascript to increase accuracy
-  # script = """
-  #   Array.from(document.querySelectorAll('body *'))
-  #     .filter(el => 
-  #       el.offsetWidth > 0
-  #       && el.offsetHeight > 0
-  #       && el.getClientRects().length > 0
-  #       && el.clientHeight > 0
-  #       && window.getComputedStyle(el).display != 'none'
-  #       && window.getComputedStyle(el).visibility === 'visible'
-  #       && el.offsetParent !== null
-  #       && el.checkVisibility()
-  #     )
-  #     .map(el => '*|*' + el.textContent)
-      
-  #     .join(' ')
-  # """
-  # result = await driver.playwright_page_manager.page.evaluate(script)
-  # print(result.split("*|*")[:5])
-  # html = await self.playwright_page_manager.page.content()
-  
-  html_description = ""
-  text_description = ""
-  for frame in playwright_page_manager.page.frames:
-    html = await frame.content()
-    html = remove_hidden_elements(html=html)
-    html = remove_html_metadata(html=html)
-
-    html_description += f"-----\nWithin frame {frame.name}:\n {html}\n----\n"
-    text_description += f"-----\nWithin frame {frame.name}:\n {inscriptis.get_text(html)}\n----\n"
-
-  return html_description, text_description
-
-
-async def describe_website(playwright_driver: PlaywrightDriver) -> Maybe[WebsiteDescription]:
-
-  # Let the page wait for load
-  await scroll_page_and_wait(page=playwright_driver.playwright_page_manager.page, timeout=3000)
-
-  try:
-    # Extract main content
-    visible_html, visible_text = await get_visible_html_and_text(playwright_page_manager=playwright_driver.playwright_page_manager)
-  except Exception as e:
-    maybe_website_description = Maybe(error=f"ERROR: Cannot load {playwright_driver.playwright_page_manager.page.url}. EXCEPTION: {e}")
-  else:
-
-    # Capture a screenshot of the page
-    url_screenshot_response = await get_url_screenshot_response_from_loaded_page(page=playwright_driver.playwright_page_manager.page)
-
-    # Get OCR text from the screenshot
-    ocr_screenshot_text = await url_screenshot_response.get_screenshot_ocr_text()
-
-    maybe_website_description = Maybe(content=WebsiteDescription(
-      url=playwright_driver.playwright_page_manager.page.url,
-      visible_html=visible_html,
-      visible_text=visible_text,
-      url_screenshot_response=url_screenshot_response,
-      ocr_screenshot_text=ocr_screenshot_text
-    ))
-  return maybe_website_description
 
 
 

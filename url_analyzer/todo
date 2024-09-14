@@ -1,7 +1,5 @@
 # Prioritized TODO
 
-- remove any references to the service endpoint in the code
-- set up batch page evaluation that operates based on lightsail
 
 
 - switch AWS authentication to IAM and reduce AWS blast radius if lightsail is compromised
@@ -41,7 +39,10 @@
 
 # Product Backlog
 - Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
-?
+- Add a hosted nested browser to lightsail
+
+
+
 
 xx- develop a cleaner failure mode for urls that don't resolve like test.com
 xx- fix docker deployment to lightsail
