@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'
 
 from url_analyzer.frontend.utilities import classify_urls_in_text_file
 
-OUTPUT_ROOT_PATH = os.path.join(os.path.dirname(__file__), '..', 'outputs', 'scans')
+OUTPUT_ROOT_PATH = os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..', 'outputs', 'scans')
 
 
 

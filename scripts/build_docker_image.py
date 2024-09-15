@@ -25,7 +25,7 @@ CODE_DIR_NAME_NAME_TO_DOCKERFILE_CONTENT = {
   RUN playwright install --with-deps
 
   EXPOSE 8000
-  CMD fastapi run url_analyzer/api/start_api.py  --host 0.0.0.0  --port 8000
+  CMD fastapi run url_analyzer/classificstion/api/start_api.py  --host 0.0.0.0  --port 8000
   """
 }
 
