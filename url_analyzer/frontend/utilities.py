@@ -91,9 +91,10 @@ class UrlClassifierInterface:
     if response_dict.get("error") is not None:
       filtered_response_dict = response_dict
     else:
-      filtered_response_dict = response_dict.get("url_classification", {})
-      if len(filtered_response_dict) == 0:
+      filtered_response_dict = response_dict.get("url_classification")
+      if filtered_response_dict is None or len(filtered_response_dict) == 0:
         print(f"Error: No keys in 'url_classification' key in response: \n-----\n{json.dumps(response_dict, indent=2)}\n----\n")
+        filtered_response_dict = {}
 
     print(f"Logging results for {url} to {log_file}")
     with open(log_file, "a") as f:

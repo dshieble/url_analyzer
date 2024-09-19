@@ -6,6 +6,7 @@ from typing import Optional
 import uuid
 
 import httpx
+import tldextract
 import tqdm
 from termcolor import colored
 
@@ -17,6 +18,17 @@ from url_analyzer.domain_analysis.config_manager import ConfigManager
 LOGS_ROOT_PATH = os.path.join(os.path.dirname(__file__), "../../outputs/suspicious_domains")
 
 pbar = tqdm.tqdm(desc='certificate_update', unit='cert')
+
+
+WHITELISTED_DOMAINS = ["amazonaws.com", "appdomain.cloud"]
+
+def get_rdn_from_url(url: str) -> str:
+  tld_extract_result = tldextract.extract(url)
+  return tld_extract_result.registered_domain
+
+def get_rdn_from_fqdn(fqdn: str) -> str:
+  return get_rdn_from_url("http://" + fqdn)
+
 
 def get_log_file_name() -> str:
   return os.path.join(LOGS_ROOT_PATH, str(datetime.datetime.now()) + str(uuid.uuid4())[:4])
@@ -50,20 +62,20 @@ class Processor:
     self.config_manager = ConfigManager()
 
   def scale_score_by_domain_reputation(self, score: float, domain: str) -> float:
-    domain_classification_response = asyncio.run(DomainClassificationResponse.from_fqdn(
-      fqdn=domain,
-      try_rdap=False,
-      domain_lookup_tool=self.domain_lookup_tool,
-      httpx_client=self.httpx_client,
-      try_async_whois=False,
-      config_manager=self.config_manager
-    ))
-    if (
-      domain_classification_response.best_parent_domain_rank_magnitude is not None
-      and not domain_classification_response.is_webhosting_fqdn
-      and not domain_classification_response.has_webhosting_domain_parent
-    ):
-      score = score * 0.5
+
+    if get_rdn_from_fqdn(domain) in WHITELISTED_DOMAINS:
+      score = 0
+    else:
+      domain_classification_response = DomainClassificationResponse.from_fqdn(
+        fqdn=domain,
+        config_manager=self.config_manager
+      )
+      if (
+        domain_classification_response.best_parent_domain_rank_magnitude is not None
+        and not domain_classification_response.is_webhosting_fqdn
+        and not domain_classification_response.has_webhosting_domain_parent
+      ):
+        score = score * 0.5
     return score
   
   def scale_score_by_whois_signal(self, score: float, domain: str) -> float:
@@ -87,6 +99,7 @@ class Processor:
     if self.run_whois:
       score = self.scale_score_by_whois_signal(score=score, domain=domain)
 
+    score = self.scale_score_by_domain_reputation(score=score, domain=domain)
     # If issued from a free CA = more suspicious
     if "Let's Encrypt" == message['data']['leaf_cert']['issuer']['O']:
       score += 10

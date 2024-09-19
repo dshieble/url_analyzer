@@ -7,7 +7,7 @@ import sys
 import certifi
 import certstream
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..'))
 
 from url_analyzer.phishing_stream.processor import Processor
 
@@ -15,7 +15,7 @@ CERTSTREAM_URL = 'wss://certstream.calidog.io'
 
 if __name__ == '__main__':
   """
-  python scripts/run_find_phishing.py
+  python url_analyzer/phishing_stream/run_find_phishing.py
   """
 
   parser = argparse.ArgumentParser()

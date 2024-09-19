@@ -32,6 +32,9 @@ async def main(args):
 if __name__ == '__main__':
   """
   python url_analyzer/frontend/run_classify_urls_in_text_file.py \
+    --path_to_file_with_urls /Users/danshiebler/workspace/personal/phishing/url_analyzer/data/test_attack_urls.txt
+
+  python url_analyzer/frontend/run_classify_urls_in_text_file.py \
     --path_to_file_with_urls /Users/danshiebler/workspace/personal/phishing/url_analyzer/data/test_safe_urls.txt
 
   python url_analyzer/frontend/run_classify_urls_in_text_file.py \
