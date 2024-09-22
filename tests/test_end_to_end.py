@@ -15,16 +15,14 @@ class TestEndToEnd(unittest.TestCase):
     maybe_rich_classification_response = asyncio.run(BasicUrlClassifier().classify_url(
       url="https://danshiebler.com"
     ))
-    assert maybe_rich_classification_response.content.url_classification.is_phishing == False
-    assert maybe_rich_classification_response.content.url_classification.page_state == "Active"
+    assert maybe_rich_classification_response.content.url_classification.classification == "Benign"
 
 
   def test_end_to_end_2(self):
     maybe_rich_classification_response = asyncio.run(BasicUrlClassifier().classify_url(
       url="https://danshiebler.com/fake"
     ))
-    assert maybe_rich_classification_response.content.url_classification.is_phishing == False
-    assert maybe_rich_classification_response.content.url_classification.page_state == "404"
+    assert maybe_rich_classification_response.content.url_classification.classification == "Inactive"
 
   def test_end_to_end_3(self):
     maybe_rich_classification_response = asyncio.run(BasicUrlClassifier().classify_url(

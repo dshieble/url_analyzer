@@ -25,15 +25,10 @@ CLASSIFICATION_FUNCTION = {
             "type": "string",
             "description": "Think step by step about this url. What are the features of this url that could imply it is phishing or not phishing?"
           },
-          "page_state": {
+          "classification": {
             "type": "string",
-            "enum": ["Active", "Not Found/404", "Unused/Expired/For Sale", "Suspected Phishing by Browser"],
-            "description": "Your judgement about the state of the page."
-          },
-          "is_phishing": {
-            "type": "string",
-            "enum": ["true", "false"],
-            "description": "Your decision about whether the url is phishing or not phishing."
+            "enum": ["Malicious", "Inactive", "Benign"],
+            "description": "Your decision about whether the url is Malicious, Inactive, or Benign."
           },
           "justification": {
             "type": "string",
@@ -45,8 +40,7 @@ CLASSIFICATION_FUNCTION = {
           "impersonation_strategy",
           "credential_theft_strategy",
           "thought_process",
-          "page_state",
-          "is_phishing",
+          "classification",
           "justification"
         ]
     }
@@ -94,19 +88,22 @@ When we open the page we see the following network activity:
 # TODO: Change this to instead be multiclass classification of some sort
 # TODO: Add in a space for the LLM to specify the brands that the page is imitating
 PHISHING_CLASSIFICATION_PROMPT_TEMPLATE = """
-You are a security analyst at a large company. You have been tasked with classifying the following url as either phishing or not phishing.
+You are a security analyst at a large company. You have been tasked with classifying the following url into one of three categories:
+- Malicious: A malicious url is one that is designed to steal user credentials or other sensitive information. It may impersonate a well-known website or use other tactics to deceive users. It may also attempt to exploit vulnerabilities in the user's browser or operating system, or install malware on the user's device.
+- Inactive: An inactive url is one that is no longer in use. It may be a placeholder page, a domain that has expired, or a page that is no longer maintained. Pages that once hosted phishing content and have since been taken down are Inactive. An inactive page is not currently a threat to users.
+- Benign: A benign page is a url that is neither inactive nor malicious.
 
 Here are some tips for making this decision
-- Phishing pages are designed to gather the user's credentials. If there is no place for the user to input credentials then it is likely not a phishing page.
-- Phishing pages often impersonate well-known websites. Look closely for signs of impersonation in the page content.
-- Expired domains are generally not phishing pages.
+- Malicious phishing pages are designed to gather the user's credentials. If there is no place for the user to input credentials then it is likely not a phishing page.
+- Malicious pages often impersonate well-known websites. Look closely for signs of impersonation in the page content.
+- 404 pages should be classified as Inactive.
 
 Here is a description of the url
 === Start Description ===
 {url_to_classify_string}
 === End Description ===
 
-Please classify the url as either phishing or not phishing.
+Please classify the url into one of the categories above.
 """
 
 IMAGE_DESCRIPTION_PROMPT_TEMPLATE = """

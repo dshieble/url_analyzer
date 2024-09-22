@@ -33,8 +33,7 @@ URL_CLASSIFICATION_FIELDS = [
   "impersonation_strategy",
   "credential_theft_strategy",
   "thought_process",
-  "page_state",
-  "is_phishing",
+  "classification",
   "justification"
 ]
 class UrlClassification(BaseModel):
@@ -42,8 +41,7 @@ class UrlClassification(BaseModel):
   impersonation_strategy: str
   credential_theft_strategy: str
   thought_process: str
-  page_state: str
-  is_phishing: bool
+  classification: str
   justification: str
 
   def display(self):
