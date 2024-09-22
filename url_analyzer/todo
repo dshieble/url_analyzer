@@ -1,10 +1,9 @@
 # Prioritized TODO
 
 
-
+- change logic from `is_phishing` and `page_state` to a single three-class classification task (safe, phishing, inactive) and verify that the classification works for all of the test pages. Also give a lot of data in the prompt about the definition and scope of these categories
 
 - run tests with a bunch of example phishing pages from https://tweetfeed.live/feeds.html or urlscan
-
 
 - add a basic end-to-end local testing suite to run before pushing to lightsail
 

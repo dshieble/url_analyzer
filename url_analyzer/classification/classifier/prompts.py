@@ -27,7 +27,7 @@ CLASSIFICATION_FUNCTION = {
           },
           "page_state": {
             "type": "string",
-            "enum": ["404", "Unused/Expired/For Sale", "Active", "Reported as Phishing"],
+            "enum": ["Active", "Not Found/404", "Unused/Expired/For Sale", "Suspected Phishing by Browser"],
             "description": "Your judgement about the state of the page."
           },
           "is_phishing": {
