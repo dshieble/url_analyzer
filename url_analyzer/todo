@@ -1,12 +1,14 @@
 # Prioritized TODO
 
 
-- change logic from `is_phishing` and `page_state` to a single three-class classification task (safe, phishing, inactive) and verify that the classification works for all of the test pages. Also give a lot of data in the prompt about the definition and scope of these categories
 
-- run tests with a bunch of example phishing pages from https://tweetfeed.live/feeds.html or urlscan
+- run tests with a bunch of example phishing pages from openphish and validate that the results are good
 
-- add a basic end-to-end local testing suite to run before pushing to lightsail
+- add a simple API-key based rate limit
 
+
+- change page design to include description of what the page does 
+- write an API documentation page and link it at the top of the website
 
 - switch to a SQL data storage scheme to enable rate limiting
 
@@ -17,7 +19,6 @@
 
 
 # Security Requirements
-- move JWT secret key storage to secrets manager
 - move lightsail DNS to proxy through zero-phishing
 
 
@@ -30,17 +31,16 @@
 
 
 # UX Backlog
-- write an API documentation page and link it at the top of the website
 
 
 # Product Backlog
-- Add a page to the website that presents all discovered phishing urls, and build streams to start discovering pages to publish to this for detection people to access
+- Create a lambda function that does some kind of basic scanning (maybe just openphish download) to get a list of malicious urls and write them to s3
 - Add a splunk integration that enables scanning links that match certain criteria in splunk against this scanner. Maybe via https://github.com/splunk/attack_range
 - Add a hosted nested browser to lightsail
 
 
-
-
+yy- move JWT secret key storage to secrets manager
+xx- add a basic end-to-end local testing suite to run before pushing to lightsail
 xx- develop a cleaner failure mode for urls that don't resolve like test.com
 xx- fix docker deployment to lightsail
 xx- add better error handling for SSL failures
@@ -54,3 +54,4 @@ xx- improve user display to show a cleaner organized output
 xx- increase speed of the logic to fetch the HTML+Image by refactoring the search logic to just grab the page rather than run a full spider
 xx- switch the deployed vercel page to be zerophishing.com
 xx- add on http:// to urls that don't have them automatically in React
+xx- change logic from `is_phishing` and `page_state` to a single three-class classification task (safe, phishing, inactive) and verify that the classification works for all of the test pages. Also give a lot of data in the prompt about the definition and scope of these categories

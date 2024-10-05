@@ -12,6 +12,7 @@ import jwt
 from url_analyzer.classification.api.api_key_generation import get_api_key_from_ip_address
 from url_analyzer.classification.classifier.classifier import BasicUrlClassifier, validate_classification_inputs
 from url_analyzer.classification.classifier.url_classification import RichUrlClassificationResponse
+from url_analyzer.classification.api.rate_limit import RateLimiter
 
 
 
@@ -51,7 +52,7 @@ JWT_SECRET_KEY = str(os.environ.get("JWT_SECRET_KEY"))
 # JWT bearer scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-
+RATE_LIMITER = RateLimiter()
 
 @app.get(
   "/",
@@ -75,26 +76,32 @@ def get_health() -> HealthCheck:
 
 @app.post("/classify")
 async def classify_url(url: str, token: str = Depends(oauth2_scheme)) -> RichUrlClassificationResponse:
-  print(f"[classify_url] url: {url}, token: {token} type(token): {type(token)} JWT_SECRET_KEY: {JWT_SECRET_KEY}")
+  print(f"[classify_url] url: {url}, token: {token}")
 
-  error = validate_classification_inputs(url=url)
-  if error is not None:
-    raise HTTPException(status_code=500, detail=error)
+  # Validate token
+  try:
+   jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
+  except jwt.ExpiredSignatureError:
+    raise HTTPException(status_code=403, detail="Token has expired")
+  except jwt.exceptions.DecodeError:
+    raise HTTPException(status_code=403, detail="Invalid token")
   else:
-    try:
-      # Validate token
-      payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=["HS256"])
-      print("[classify_url] payload", payload)
+    # Rate limit check
+    if RATE_LIMITER.is_rate_limited(token=token):
+      raise HTTPException(status_code=429, detail=f"Rate limit exceeded. Try again after {RATE_LIMITER.window_size_in_minutes} minutes.")
+    else:
+      # Validate classification inputs
+      error = validate_classification_inputs(url=url)
+      if error is not None:
+        raise HTTPException(status_code=500, detail=error)
 
-      maybe_rich_classification_response = await BasicUrlClassifier().classify_url(
-        url=url
-      )
+      # Classify URL
+      maybe_rich_classification_response = await BasicUrlClassifier().classify_url(url=url)
       if maybe_rich_classification_response.error is not None:
         raise HTTPException(status_code=500, detail=maybe_rich_classification_response.error)
-      else:
-        return maybe_rich_classification_response.content
-    except jwt.ExpiredSignatureError:
-      raise HTTPException(status_code=403, detail="Token has expired")
+
+      return maybe_rich_classification_response.content
+
 
 @app.get("/get_api_key")
 async def get_ip(request: Request):
